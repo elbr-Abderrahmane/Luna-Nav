@@ -1,0 +1,859 @@
+{
+  "_meta": {
+    "data_origin": "MOCK",
+    "is_simulated": true,
+    "disclaimer": "MOCK / SIMULATED DATA ONLY: Candidate landing-zone polygons and engineering metrics are structural placeholders awaiting Person 2, 3, and 4 modules."
+  },
+  "zones": [
+    {
+      "zone_id": "zone-shackleton-alpha",
+      "region_id": "reg-shackleton-rim",
+      "name": "Shackleton Rim Zone Alpha (MOCK)",
+      "data_origin": "MOCK",
+      "centroid": {
+        "latitude": -89.58,
+        "longitude": 118.2,
+        "elevation_m": {
+          "value": 2140.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK zone centroid elevation"
+        }
+      },
+      "area_km2": {
+        "value": 4.2,
+        "unit": "km^2",
+        "status": "SIMULATED",
+        "note": "MOCK polygon area"
+      },
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [117.4, -89.55],
+            [119.0, -89.55],
+            [119.0, -89.61],
+            [117.4, -89.61],
+            [117.4, -89.55]
+          ]
+        ]
+      },
+      "parameters": {
+        "average_slope": {
+          "value": 4.2,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK average slope"
+        },
+        "max_slope": {
+          "value": 7.9,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK max slope"
+        },
+        "surface_roughness": {
+          "value": 0.35,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK RMS roughness"
+        },
+        "elevation": {
+          "value": 2140.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK mean elevation"
+        },
+        "crater_density": {
+          "value": 12.5,
+          "unit": "craters/km^2",
+          "status": "SIMULATED",
+          "note": "MOCK crater density"
+        },
+        "boulder_density": {
+          "value": 8.0,
+          "unit": "boulders/km^2",
+          "status": "SIMULATED",
+          "note": "MOCK boulder density"
+        },
+        "illumination_percentage": {
+          "value": 88.4,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK solar illumination"
+        },
+        "earth_visibility_percentage": {
+          "value": 81.0,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK direct-to-Earth visibility"
+        },
+        "safety_notes": "SIMULATED: Low slope plateau segment with high simulated solar illumination."
+      }
+    },
+    {
+      "zone_id": "zone-shackleton-beta",
+      "region_id": "reg-shackleton-rim",
+      "name": "Shackleton Rim Zone Beta (MOCK)",
+      "data_origin": "MOCK",
+      "centroid": {
+        "latitude": -89.64,
+        "longitude": 120.5,
+        "elevation_m": {
+          "value": 2085.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK zone centroid elevation"
+        }
+      },
+      "area_km2": {
+        "value": 3.8,
+        "unit": "km^2",
+        "status": "SIMULATED",
+        "note": "MOCK polygon area"
+      },
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [119.8, -89.61],
+            [121.2, -89.61],
+            [121.2, -89.67],
+            [119.8, -89.67],
+            [119.8, -89.61]
+          ]
+        ]
+      },
+      "parameters": {
+        "average_slope": {
+          "value": 5.9,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK average slope"
+        },
+        "max_slope": {
+          "value": 10.4,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK max slope"
+        },
+        "surface_roughness": {
+          "value": 0.52,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK RMS roughness"
+        },
+        "elevation": {
+          "value": 2085.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK mean elevation"
+        },
+        "crater_density": {
+          "value": 18.2,
+          "unit": "craters/km^2",
+          "status": "SIMULATED",
+          "note": "MOCK crater density"
+        },
+        "boulder_density": {
+          "value": null,
+          "unit": "boulders/km^2",
+          "status": "UNAVAILABLE",
+          "note": "UNAVAILABLE: High-resolution boulder count not available for Sector Beta; explicitly null rather than 0."
+        },
+        "illumination_percentage": {
+          "value": 83.1,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK solar illumination"
+        },
+        "earth_visibility_percentage": {
+          "value": 76.5,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK direct-to-Earth visibility"
+        },
+        "safety_notes": "SIMULATED: Moderate slope; note that boulder_density is explicitly UNAVAILABLE (null)."
+      }
+    },
+    {
+      "zone_id": "zone-shackleton-gamma",
+      "region_id": "reg-shackleton-rim",
+      "name": "Shackleton Rim Zone Gamma (MOCK)",
+      "data_origin": "MOCK",
+      "centroid": {
+        "latitude": -89.71,
+        "longitude": 122.4,
+        "elevation_m": {
+          "value": 1995.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK zone centroid elevation"
+        }
+      },
+      "area_km2": {
+        "value": 4.6,
+        "unit": "km^2",
+        "status": "SIMULATED",
+        "note": "MOCK polygon area"
+      },
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [121.6, -89.68],
+            [123.2, -89.68],
+            [123.2, -89.74],
+            [121.6, -89.74],
+            [121.6, -89.68]
+          ]
+        ]
+      },
+      "parameters": {
+        "average_slope": {
+          "value": 7.6,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK average slope"
+        },
+        "max_slope": {
+          "value": 13.8,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK max slope"
+        },
+        "surface_roughness": {
+          "value": 0.78,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK RMS roughness"
+        },
+        "elevation": {
+          "value": 1995.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK mean elevation"
+        },
+        "crater_density": {
+          "value": 24.0,
+          "unit": "craters/km^2",
+          "status": "SIMULATED",
+          "note": "MOCK crater density"
+        },
+        "boulder_density": {
+          "value": 19.5,
+          "unit": "boulders/km^2",
+          "status": "SIMULATED",
+          "note": "MOCK boulder density"
+        },
+        "illumination_percentage": {
+          "value": 78.2,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK solar illumination"
+        },
+        "earth_visibility_percentage": {
+          "value": 72.0,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK direct-to-Earth visibility"
+        },
+        "safety_notes": "SIMULATED: Steeper local gradients near secondary crater cluster."
+      }
+    },
+    {
+      "zone_id": "zone-shackleton-delta",
+      "region_id": "reg-shackleton-rim",
+      "name": "Shackleton Rim Zone Delta (MOCK)",
+      "data_origin": "MOCK",
+      "centroid": {
+        "latitude": -89.77,
+        "longitude": 116.8,
+        "elevation_m": {
+          "value": 2030.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK zone centroid elevation"
+        }
+      },
+      "area_km2": {
+        "value": 3.5,
+        "unit": "km^2",
+        "status": "SIMULATED",
+        "note": "MOCK polygon area"
+      },
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [116.0, -89.74],
+            [117.6, -89.74],
+            [117.6, -89.80],
+            [116.0, -89.80],
+            [116.0, -89.74]
+          ]
+        ]
+      },
+      "parameters": {
+        "average_slope": {
+          "value": 5.1,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK average slope"
+        },
+        "max_slope": {
+          "value": 9.2,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK max slope"
+        },
+        "surface_roughness": {
+          "value": 0.44,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK RMS roughness"
+        },
+        "elevation": {
+          "value": 2030.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK mean elevation"
+        },
+        "crater_density": {
+          "value": 15.0,
+          "unit": "craters/km^2",
+          "status": "SIMULATED",
+          "note": "MOCK crater density"
+        },
+        "boulder_density": {
+          "value": null,
+          "unit": "boulders/km^2",
+          "status": "UNAVAILABLE",
+          "note": "UNAVAILABLE: Boulder survey pending Person 2 GIS module."
+        },
+        "illumination_percentage": {
+          "value": 85.0,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK solar illumination"
+        },
+        "earth_visibility_percentage": {
+          "value": 79.0,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK direct-to-Earth visibility"
+        },
+        "safety_notes": "SIMULATED: Fourth candidate zone in Shackleton sector for flexible 3-zone selection."
+      }
+    },
+    {
+      "zone_id": "zone-degerlache-alpha",
+      "region_id": "reg-de-gerlache-ridge",
+      "name": "De Gerlache Ridge Alpha (MOCK)",
+      "data_origin": "MOCK",
+      "centroid": {
+        "latitude": -88.62,
+        "longitude": -69.5,
+        "elevation_m": {
+          "value": 1840.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK zone centroid elevation"
+        }
+      },
+      "area_km2": {
+        "value": 5.0,
+        "unit": "km^2",
+        "status": "SIMULATED",
+        "note": "MOCK polygon area"
+      },
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-70.5, -88.58],
+            [-68.5, -88.58],
+            [-68.5, -88.66],
+            [-70.5, -88.66],
+            [-70.5, -88.58]
+          ]
+        ]
+      },
+      "parameters": {
+        "average_slope": {
+          "value": 5.4,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK average slope"
+        },
+        "max_slope": {
+          "value": 9.8,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK max slope"
+        },
+        "surface_roughness": {
+          "value": 0.48,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK RMS roughness"
+        },
+        "elevation": {
+          "value": 1840.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK mean elevation"
+        },
+        "crater_density": {
+          "value": 14.2,
+          "unit": "craters/km^2",
+          "status": "SIMULATED",
+          "note": "MOCK crater density"
+        },
+        "boulder_density": {
+          "value": 10.5,
+          "unit": "boulders/km^2",
+          "status": "SIMULATED",
+          "note": "MOCK boulder density"
+        },
+        "illumination_percentage": {
+          "value": 81.5,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK solar illumination"
+        },
+        "earth_visibility_percentage": {
+          "value": 77.0,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK direct-to-Earth visibility"
+        },
+        "safety_notes": "SIMULATED: Primary ridge terrace on De Gerlache connecting ridge."
+      }
+    },
+    {
+      "zone_id": "zone-degerlache-beta",
+      "region_id": "reg-de-gerlache-ridge",
+      "name": "De Gerlache Ridge Beta (MOCK)",
+      "data_origin": "MOCK",
+      "centroid": {
+        "latitude": -88.74,
+        "longitude": -67.8,
+        "elevation_m": {
+          "value": 1790.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK zone centroid elevation"
+        }
+      },
+      "area_km2": {
+        "value": 4.4,
+        "unit": "km^2",
+        "status": "SIMULATED",
+        "note": "MOCK polygon area"
+      },
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-68.6, -88.70],
+            [-67.0, -88.70],
+            [-67.0, -88.78],
+            [-68.6, -88.78],
+            [-68.6, -88.70]
+          ]
+        ]
+      },
+      "parameters": {
+        "average_slope": {
+          "value": 6.7,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK average slope"
+        },
+        "max_slope": {
+          "value": 11.5,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK max slope"
+        },
+        "surface_roughness": {
+          "value": 0.61,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK RMS roughness"
+        },
+        "elevation": {
+          "value": 1790.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK mean elevation"
+        },
+        "crater_density": {
+          "value": 19.0,
+          "unit": "craters/km^2",
+          "status": "SIMULATED",
+          "note": "MOCK crater density"
+        },
+        "boulder_density": {
+          "value": null,
+          "unit": "boulders/km^2",
+          "status": "UNAVAILABLE",
+          "note": "UNAVAILABLE: Missing high-resolution boulder map."
+        },
+        "illumination_percentage": {
+          "value": 78.0,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK solar illumination"
+        },
+        "earth_visibility_percentage": {
+          "value": 74.5,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK direct-to-Earth visibility"
+        },
+        "safety_notes": "SIMULATED: Central ridge saddle candidate."
+      }
+    },
+    {
+      "zone_id": "zone-degerlache-gamma",
+      "region_id": "reg-de-gerlache-ridge",
+      "name": "De Gerlache Ridge Gamma (MOCK)",
+      "data_origin": "MOCK",
+      "centroid": {
+        "latitude": -88.85,
+        "longitude": -66.1,
+        "elevation_m": {
+          "value": 1735.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK zone centroid elevation"
+        }
+      },
+      "area_km2": {
+        "value": 4.1,
+        "unit": "km^2",
+        "status": "SIMULATED",
+        "note": "MOCK polygon area"
+      },
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-66.9, -88.81],
+            [-65.3, -88.81],
+            [-65.3, -88.89],
+            [-66.9, -88.89],
+            [-66.9, -88.81]
+          ]
+        ]
+      },
+      "parameters": {
+        "average_slope": {
+          "value": 8.1,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK average slope"
+        },
+        "max_slope": {
+          "value": 14.2,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK max slope"
+        },
+        "surface_roughness": {
+          "value": 0.72,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK RMS roughness"
+        },
+        "elevation": {
+          "value": 1735.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK mean elevation"
+        },
+        "crater_density": {
+          "value": 22.4,
+          "unit": "craters/km^2",
+          "status": "SIMULATED",
+          "note": "MOCK crater density"
+        },
+        "boulder_density": {
+          "value": 16.0,
+          "unit": "boulders/km^2",
+          "status": "SIMULATED",
+          "note": "MOCK boulder density"
+        },
+        "illumination_percentage": {
+          "value": 75.2,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK solar illumination"
+        },
+        "earth_visibility_percentage": {
+          "value": 71.0,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK direct-to-Earth visibility"
+        },
+        "safety_notes": "SIMULATED: Eastern flank candidate zone."
+      }
+    },
+    {
+      "zone_id": "zone-malapert-alpha",
+      "region_id": "reg-malapert-massif",
+      "name": "Malapert Summit Alpha (MOCK)",
+      "data_origin": "MOCK",
+      "centroid": {
+        "latitude": -85.98,
+        "longitude": 1.9,
+        "elevation_m": {
+          "value": 3450.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK zone centroid elevation"
+        }
+      },
+      "area_km2": {
+        "value": 5.5,
+        "unit": "km^2",
+        "status": "SIMULATED",
+        "note": "MOCK polygon area"
+      },
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [1.0, -85.94],
+            [2.8, -85.94],
+            [2.8, -86.02],
+            [1.0, -86.02],
+            [1.0, -85.94]
+          ]
+        ]
+      },
+      "parameters": {
+        "average_slope": {
+          "value": 4.8,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK average slope"
+        },
+        "max_slope": {
+          "value": 8.9,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK max slope"
+        },
+        "surface_roughness": {
+          "value": 0.41,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK RMS roughness"
+        },
+        "elevation": {
+          "value": 3450.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK mean elevation"
+        },
+        "crater_density": {
+          "value": 11.0,
+          "unit": "craters/km^2",
+          "status": "SIMULATED",
+          "note": "MOCK crater density"
+        },
+        "boulder_density": {
+          "value": 9.2,
+          "unit": "boulders/km^2",
+          "status": "SIMULATED",
+          "note": "MOCK boulder density"
+        },
+        "illumination_percentage": {
+          "value": 76.8,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK solar illumination"
+        },
+        "earth_visibility_percentage": {
+          "value": 94.0,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK direct-to-Earth visibility"
+        },
+        "safety_notes": "SIMULATED: High direct-to-Earth visibility summit plateau."
+      }
+    },
+    {
+      "zone_id": "zone-malapert-beta",
+      "region_id": "reg-malapert-massif",
+      "name": "Malapert Terrace Beta (MOCK)",
+      "data_origin": "MOCK",
+      "centroid": {
+        "latitude": -86.08,
+        "longitude": 3.1,
+        "elevation_m": {
+          "value": 3310.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK zone centroid elevation"
+        }
+      },
+      "area_km2": {
+        "value": 4.9,
+        "unit": "km^2",
+        "status": "SIMULATED",
+        "note": "MOCK polygon area"
+      },
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [2.2, -86.04],
+            [4.0, -86.04],
+            [4.0, -86.12],
+            [2.2, -86.12],
+            [2.2, -86.04]
+          ]
+        ]
+      },
+      "parameters": {
+        "average_slope": {
+          "value": 6.5,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK average slope"
+        },
+        "max_slope": {
+          "value": 11.2,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK max slope"
+        },
+        "surface_roughness": {
+          "value": 0.58,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK RMS roughness"
+        },
+        "elevation": {
+          "value": 3310.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK mean elevation"
+        },
+        "crater_density": {
+          "value": 16.5,
+          "unit": "craters/km^2",
+          "status": "SIMULATED",
+          "note": "MOCK crater density"
+        },
+        "boulder_density": {
+          "value": null,
+          "unit": "boulders/km^2",
+          "status": "UNAVAILABLE",
+          "note": "UNAVAILABLE: Boulder density unmapped in mock dataset."
+        },
+        "illumination_percentage": {
+          "value": 73.4,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK solar illumination"
+        },
+        "earth_visibility_percentage": {
+          "value": 89.5,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK direct-to-Earth visibility"
+        },
+        "safety_notes": "SIMULATED: Mid-elevation terrace on Malapert massif."
+      }
+    },
+    {
+      "zone_id": "zone-malapert-gamma",
+      "region_id": "reg-malapert-massif",
+      "name": "Malapert Ridge Gamma (MOCK)",
+      "data_origin": "MOCK",
+      "centroid": {
+        "latitude": -86.18,
+        "longitude": 4.4,
+        "elevation_m": {
+          "value": 3180.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK zone centroid elevation"
+        }
+      },
+      "area_km2": {
+        "value": 4.3,
+        "unit": "km^2",
+        "status": "SIMULATED",
+        "note": "MOCK polygon area"
+      },
+      "polygon_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [3.5, -86.14],
+            [5.3, -86.14],
+            [5.3, -86.22],
+            [3.5, -86.22],
+            [3.5, -86.14]
+          ]
+        ]
+      },
+      "parameters": {
+        "average_slope": {
+          "value": 7.9,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK average slope"
+        },
+        "max_slope": {
+          "value": 13.5,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK max slope"
+        },
+        "surface_roughness": {
+          "value": 0.69,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK RMS roughness"
+        },
+        "elevation": {
+          "value": 3180.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK mean elevation"
+        },
+        "crater_density": {
+          "value": 21.0,
+          "unit": "craters/km^2",
+          "status": "SIMULATED",
+          "note": "MOCK crater density"
+        },
+        "boulder_density": {
+          "value": 14.8,
+          "unit": "boulders/km^2",
+          "status": "SIMULATED",
+          "note": "MOCK boulder density"
+        },
+        "illumination_percentage": {
+          "value": 70.1,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK solar illumination"
+        },
+        "earth_visibility_percentage": {
+          "value": 86.0,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK direct-to-Earth visibility"
+        },
+        "safety_notes": "SIMULATED: Southern ridge slope on Malapert massif."
+      }
+    }
+  ]
+}

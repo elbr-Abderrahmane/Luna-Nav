@@ -1,0 +1,162 @@
+{
+  "_meta": {
+    "data_origin": "MOCK",
+    "is_simulated": true,
+    "disclaimer": "MOCK / SIMULATED DATA ONLY: Structural placeholders for LUNA NAV Layer 2 regional exploration. Not derived from NASA LRO/LOLA observations."
+  },
+  "regions": [
+    {
+      "region_id": "reg-shackleton-rim",
+      "name": "Shackleton Crater Rim Sector (MOCK)",
+      "description": "SIMULATED region along the illuminated ridge of Shackleton Crater near the Lunar South Pole.",
+      "data_origin": "MOCK",
+      "centroid": {
+        "latitude": -89.65,
+        "longitude": 120.0,
+        "elevation_m": {
+          "value": 2100.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK regional centroid elevation"
+        }
+      },
+      "boundary_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [115.0, -89.45],
+            [125.0, -89.45],
+            [125.0, -89.85],
+            [115.0, -89.85],
+            [115.0, -89.45]
+          ]
+        ]
+      },
+      "environmental_summary": {
+        "average_elevation": {
+          "value": 2050.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK regional elevation placeholder"
+        },
+        "average_slope": {
+          "value": 6.8,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK preliminary regional slope"
+        },
+        "estimated_illumination": {
+          "value": 84.5,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK preliminary illumination estimate"
+        },
+        "surface_characteristics": "SIMULATED: Elevated crater rim ridge with moderate regolith compaction and adjacent shadowed floor.",
+        "preliminary_suitability_label": "HIGH_CANDIDATE_SIMULATED"
+      },
+      "available_zone_count": 4
+    },
+    {
+      "region_id": "reg-de-gerlache-ridge",
+      "name": "De Gerlache–Shackleton Connecting Ridge (MOCK)",
+      "description": "SIMULATED high-altitude ridge connecting De Gerlache and Shackleton craters.",
+      "data_origin": "MOCK",
+      "centroid": {
+        "latitude": -88.72,
+        "longitude": -68.4,
+        "elevation_m": {
+          "value": 1820.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK regional centroid elevation"
+        }
+      },
+      "boundary_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-73.0, -88.50],
+            [-64.0, -88.50],
+            [-64.0, -88.95],
+            [-73.0, -88.95],
+            [-73.0, -88.50]
+          ]
+        ]
+      },
+      "environmental_summary": {
+        "average_elevation": {
+          "value": 1790.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK regional elevation placeholder"
+        },
+        "average_slope": {
+          "value": 8.2,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK preliminary regional slope"
+        },
+        "estimated_illumination": {
+          "value": 79.0,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK preliminary illumination estimate"
+        },
+        "surface_characteristics": "SIMULATED: Broad ridge crest with scattered small impact craters and long solar horizons.",
+        "preliminary_suitability_label": "MODERATE_CANDIDATE_SIMULATED"
+      },
+      "available_zone_count": 3
+    },
+    {
+      "region_id": "reg-malapert-massif",
+      "name": "Malapert Massif Highland Sector (MOCK)",
+      "description": "SIMULATED elevated massif region offering high direct-to-Earth visibility geometry.",
+      "data_origin": "MOCK",
+      "centroid": {
+        "latitude": -86.05,
+        "longitude": 2.8,
+        "elevation_m": {
+          "value": 3400.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK regional centroid elevation"
+        }
+      },
+      "boundary_geojson": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-1.0, -85.80],
+            [6.5, -85.80],
+            [6.5, -86.30],
+            [-1.0, -86.30],
+            [-1.0, -85.80]
+          ]
+        ]
+      },
+      "environmental_summary": {
+        "average_elevation": {
+          "value": 3350.0,
+          "unit": "m",
+          "status": "SIMULATED",
+          "note": "MOCK regional elevation placeholder"
+        },
+        "average_slope": {
+          "value": 9.4,
+          "unit": "deg",
+          "status": "SIMULATED",
+          "note": "MOCK preliminary regional slope"
+        },
+        "estimated_illumination": {
+          "value": 74.2,
+          "unit": "%",
+          "status": "SIMULATED",
+          "note": "MOCK preliminary illumination estimate"
+        },
+        "surface_characteristics": "SIMULATED: Highland massif summit plateau with strong Earth line-of-sight geometry.",
+        "preliminary_suitability_label": "MODERATE_CANDIDATE_SIMULATED"
+      },
+      "available_zone_count": 3
+    }
+  ]
+}
