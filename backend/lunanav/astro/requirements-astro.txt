@@ -1,0 +1,8 @@
+# P3 astro deps (P5: merge into backend/pyproject.toml)
+numpy>=1.26
+pydantic>=2.5
+spiceypy>=6.0   # optional: only for the SPICE backend after fetch_kernels.py
+# tests only
+pytest>=8
+affine>=2.4     # used by the mock DEM in tests (rasterio depends on it anyway)
+rasterio>=1.3   # optional: real LOLA DEM (lola_dem.py) and validate_lola_illumination.py
