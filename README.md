@@ -1,574 +1,497 @@
-# LunaNav — Team README
+# LunaNav: Team README
 
-> Lunar South Pole landing-site selection app for the NASA challenge (14th–15th).
-> This file is the **single source of truth** for who owns what, how the code is laid out, and the
-> data contracts every module must respect. Every agent brief in `docs/agents/` points back here.
-> If something here conflicts with an agent brief, **this README wins**.
+> Our entry for the NASA Space Apps Challenge 2026 **"Lunar Landing Site Navigator"** (Nov 14–15).
+> This file is the **single source of truth** for what we build, who owns what, how the code is laid
+> out and the data contracts every module must respect. Every agent brief in `agents/` points back
+> here. If something here conflicts with an agent brief, **this README wins**.
+
+**Deadline: Sat Nov 15, 23:59 local.** Submission = a **recorded video, max 90 seconds**, explaining the
+project (no live judging). Everything we build should be visible and understandable inside that video.
 
 ---
 
 ## 1. What we are building
 
-A web app that walks a user from a mission date down to one recommended landing coordinate:
+The challenge asks for a tool that helps mission planners and the public understand **when and
+where** a lunar landing site has sunlight (power) and a line of sight to Earth (communications):
+time remaining before sunset or Earthset, how long the sunlight and Earth visibility windows last,
+solar elevation for power, and a way to **compare sites and dates**.
 
-**Mission Configuration → Lunar South Pole Exploration → Regional Selection → Landing-Zone Identification → Selection of Three Candidates → Comparative Evaluation → Recommended Landing Zone → Optimal Landing-Point Identification → Final Mission Report**
+LunaNav answers one question: **"If we land here, on this date, will we have power and comms, and for how long?"**
 
-The real challenge datasets are **not available yet**. We therefore build everything **mock-first**:
-every module works end to end on fake data that has *exactly* the same shape (and, for terrain, the
-same file format) as the real data will have. When the datasets arrive, we swap the data source,
-not the code.
+### The app flow
+
+| # | Screen | What the user does / sees | Backend call (P3 function) |
+|---|---|---|---|
+| **1** | **Scenario builder** | Build **2–4 scenario cards**. Each card = a **site** (pick from the 26-site catalog, or type lat/lon) + a **landing date** (+ optional mission duration, default one lunar day). | `GET /sites` |
+| **2** | **Site view** | For one card: the **terrain horizon** around the site with the **Sun and Earth** drawn on it, current Sun elevation, power (W/m² on a vertical panel), and live **countdowns to sunset / Earthset** (or sunrise / Earthrise). | `site_conditions` |
+| **3** | **Timeline** | A slider over **one lunar day (29.5 days)** from the landing date. Three bars: **sunlight**, **Earth visible**, **both** (power + comms). Dragging the slider moves the Sun and Earth on the horizon view. | `site_timeline` |
+| **4** | **Compare** | The cards **side by side**: `sunlight_pct`, `longest_darkness_h`, `earth_visibility_pct`, `longest_comms_gap_h`, `power_and_comms_pct`, the best card per metric highlighted, and a **verdict** per card: **viable / marginal / not viable** with the reasons. | `compare_scenarios` + verdict (P4) |
+| **5** | **Date sweep** | For one site: the **next 12 lunar days** as a small chart/table ("what if the launch slips?"). Click a row to add it as a new scenario card. | `date_sweep` |
+| *opt.* | Explainers / export | Short public explainers ("why does the Sun skim the horizon at the pole?", "what is libration?") and an export of the comparison (CSV / JSON / printable page). | – |
+
+There is **no trajectory layer, no region → zone → point drill-down and no PDF mission report** any more.
+Those belonged to the pre-challenge plan and are dropped (see §12).
+
+### Official challenge resources we use or link
+
+- **NASA PGDA LOLA south-pole DEM** (Barker et al. 2023), 80 m/px, used for terrain horizons. Also the PGDA average-illumination maps, used to validate us.
+- **JPL Horizons**, used to validate our Sun/Earth ephemeris.
+- **NAIF SPICE kernels (DE440)**, our high-accuracy ephemeris backend.
+- **LROC QuickMap** and **Moon Trek**: link out from the site view so a user can look at the real site.
+- **CSA Moon page**: context for the public explainers.
 
 ---
 
-## 2. The four layers
-
-| Layer | What the user sees | Output passed to the next layer |
-|---|---|---|
-| **L1 Mission Configuration & Earth–Moon Interception** | 3D Earth + orbiting Moon, date picker for arrival, transfer trajectory, collapsible mission info panel, Confirm button | `arrival_utc`, interception window, trajectory, mission parameters (`MissionPlan`) |
-| **L2 South Pole Regional Exploration** | Earth fades out, camera flies to the lunar South Pole, predefined regions drawn as highlighted boundaries, hover + click info cards, select one region | `selected_region_id` + region data (`Region`) |
-| **L3 Landing-Zone Identification & Evaluation** | Zoom into region, landing-zone polygons, hover + click info cards, user picks **exactly 3**, app scores/ranks them, comparison summary, winner highlighted | 3 scored candidates, ranking, `recommended_zone_id` (`ZoneEvaluation`) |
-| **L4 Optimal Landing-Point Identification** | Zoom into winning zone, candidate point markers, click for details, optimal point highlighted, **Generate Report** (PDF) | final coordinates, point evaluation, PDF report (`PointsResult`, report) |
-
-Global features: starfield background, smooth camera transitions, floating info cards, collapsible panels,
-back-navigation **without losing selections**, consistent coordinate systems.
-
----
-
-## 3. Team & ownership
+## 2. Team & ownership
 
 | ID | Role | Stack | Owns (folders) | Agent brief |
 |---|---|---|---|---|
-| **P1** | Frontend & Visualization | React / TypeScript, three.js | `frontend/` | `docs/agents/AGENT_P1_frontend.md` |
-| **P2** | Geospatial & Terrain | Python / GIS | `backend/lunanav/terrain/`, `backend/lunanav/coords.py`, `scripts/terrain/` | `docs/agents/AGENT_P2_terrain.md` |
-| **P3** | Astronomy & Physics | Python / scientific computing | `backend/lunanav/astro/`, `scripts/astro/` | `docs/agents/AGENT_P3_astro.md` |
-| **P4** | Decision Engine & AI | Python / algorithms | `backend/lunanav/decision/`, `docs/methodology.md` (scoring part) | `docs/agents/AGENT_P4_decision.md` |
-| **P5** | Backend & Integration | FastAPI / QA / DevOps | `backend/lunanav/api/`, `backend/lunanav/schemas/`, `backend/lunanav/report/`, `mock_data/`, `contracts/`, CI, deployment | `docs/agents/AGENT_P5_backend.md` |
+| **P1** | Frontend & Visualization | React / TypeScript | `frontend/` | `agents/AGENT_P1_frontend.md` |
+| **P2** | Terrain & Coordinates | Python / GIS | `backend/lunanav/terrain/`, `backend/lunanav/coords.py`, `scripts/terrain/` | `agents/AGENT_P2_terrain.md` |
+| **P3** | Astronomy & Physics (**wrida**) | Python / scientific computing | `backend/lunanav/astro/`, `scripts/astro/`, `mock_data/astro/` | `agents/AGENT_P3_astro.md` |
+| **P4** | Verdict, Explanations & Content | Python / product | `backend/lunanav/decision/`, `docs/explainers/`, `docs/methodology.md` (verdict part) | `agents/AGENT_P4_decision.md` |
+| **P5** | Backend, Integration & Video | FastAPI / QA / DevOps | `backend/app/`, `backend/tests/` (non-astro), deployment, demo video | `agents/AGENT_P5_backend.md` |
 
-Fill in names: P1 ______ · P2 ______ · P3 ______ · P4 ______ · P5 ______
+Fill in names: P1 ______ · P2 ______ · P3 wrida · P4 ______ · P5 ______
 
-### 3.1 Who does what, per layer
+### 2.1 Who does what, per screen
 
-| | **L1 Mission** | **L2 Regions** | **L3 Zones (pick 3)** | **L4 Points + Report** |
-|---|---|---|---|---|
-| **P1 Frontend** | Earth–Moon 3D scene, date picker, trajectory line, collapsible mission panel, Confirm | Camera fly-to pole, region boundary overlays, hover/click info cards, region select | Zone polygons on terrain mesh, info cards, exactly-3 selection UI, comparison charts (radar + bars), winner highlight, explanation panel | Point markers, point info card, optimal point highlight, terrain inspection, Generate Report button |
-| **P2 Terrain** | — | Region polygons, region terrain stats (elevation, slope, roughness, surface), heightmaps for the 3D mesh | **Zone identification** (polygons from slope/roughness masks), zone terrain metrics, crater/boulder density | **Candidate point generation**, local slope/roughness, distance to craters/hazards |
-| **P3 Astro** | **Moon ephemeris, transfer trajectory, interception window, launch time, Earth–Moon distance, orbital params** | Region illumination & Earth visibility at arrival | Zone illumination %, longest shadow, Earth visibility / comms | Point-level illumination & Earth visibility using horizon masks (terrain obstruction) |
-| **P4 Decision** | — | Preliminary suitability score/label for regions | **Weighted scoring / MCDA, hard constraints, ranking of the 3, comparison explanation** | **Point ranking, optimal point, final explanation**, methodology text for the report |
-| **P5 Backend** | `/mission/plan` endpoint | `/regions` endpoints | `/zones`, `/evaluate/zones` endpoints | `/points` endpoint, **PDF report generation**, deployment, demo build |
+| | **1 Scenario builder** | **2 Site view** | **3 Timeline** | **4 Compare** | **5 Date sweep** |
+|---|---|---|---|---|---|
+| **P1** | Card list (2–4), site picker with search + category filter, lat/lon input with validation, date picker | Horizon panorama (azimuth 0–360 × elevation) with Sun/Earth disks, gauges, countdown timers, QuickMap / Moon Trek links | Slider + three bars (sunlight / Earth / both), animates the horizon view | Side-by-side table, best-per-metric highlight, verdict badges + reasons | Chart of 12 rows, "add as card" button |
+| **P2** | Coordinate checks (inside DEM coverage? south of 80°S?) | Optional local terrain: slope and roughness at the site, small heightmap for a 3D inset | – | Optional extra column: slope at site | – |
+| **P3** | 26-site catalog | `site_conditions`: Sun/Earth az/el, horizon height, power, countdowns, windows, metrics | `site_timeline`: time series + horizon profile | `compare_scenarios` metrics + `best` | `date_sweep` |
+| **P4** | – | One-sentence plain-language summary of the card | – | **Verdict rule** (viable / marginal / not viable) + reasons, short comparison explanation | One-line "best date" explanation |
+| **P5** | `/sites` endpoint | `/scenarios/conditions` | `/scenarios/timeline` | `/scenarios/compare` (adds P4 verdicts) | `/scenarios/date-sweep` |
 
+P5 also does caching, deployment, the screen recording and the 90-second video edit (with everyone).
 Everyone: unit tests for their own module, keep `mock_data/` fixtures valid for their outputs.
 
 ---
 
-## 4. Shared architecture
+## 3. Architecture
 
 ```
-                      ┌───────────────────────────────────────────┐
-                      │ frontend/  (P1)  React + TS + three.js    │
-                      │ zustand mission store · TanStack Query    │
-                      └──────────────────┬────────────────────────┘
-                                         │ HTTP JSON  /api/v1/*
-                                         │ (types generated from OpenAPI)
-                      ┌──────────────────▼────────────────────────┐
-                      │ backend/lunanav/api  (P5)  FastAPI        │
-                      │ routes → services/pipeline.py → modules   │
-                      │ DATA_MODE = fixtures | synthetic | real   │
-                      └───┬───────────────┬───────────────┬───────┘
-                          │ Python calls  │               │
-            ┌─────────────▼───┐   ┌───────▼────────┐  ┌───▼───────────────┐
-            │ terrain/ (P2)   │◄──┤ astro/ (P3)    │  │ decision/ (P4)    │
-            │ DEM, slope,     │   │ ephemeris,     │  │ normalize, weight,│
-            │ zones, points   │   │ sun/earth,     │  │ rank, explain     │
-            └────────┬────────┘   │ horizon masks  │  └───────────────────┘
-                     │            └────────────────┘   (pure: metrics in →
-                     ▼                                   scores out)
-          data/ GeoTIFF (synthetic now, LOLA later)
+                      ┌──────────────────────────────────────────┐
+                      │ frontend/  (P1)  React + TS              │
+                      │ scenario cards · horizon view · charts   │
+                      └──────────────────┬───────────────────────┘
+                                         │ HTTP JSON  /api/*
+                      ┌──────────────────▼───────────────────────┐
+                      │ backend/app  (P5)  FastAPI               │
+                      │ routes → services → adapters → modules   │
+                      └───┬──────────────────┬───────────────┬───┘
+                          │ Python calls     │               │
+            ┌─────────────▼───┐   ┌──────────▼───────┐   ┌───▼────────────────┐
+            │ terrain/ (P2)   │◄──┤ astro/ (P3)      │   │ decision/ (P4)     │
+            │ DEM access,     │   │ ephemeris,       │   │ verdict rule,      │
+            │ slope, coords   │   │ horizons, scen-  │   │ explanations       │
+            └────────┬────────┘   │ arios, sites     │   └────────────────────┘
+                     │            └──────────────────┘   (pure: metrics in →
+                     ▼                                     verdict out)
+          data/raw/dem/LDEM_80S_80MPP_ADJ.TIF (real LOLA, git-ignored)
 ```
 
-Rules of the architecture:
+Rules:
 
-1. **The API is the only thing the frontend talks to.** The frontend never computes science; it only converts coordinates for display.
-2. **Modules talk through plain Python functions with Pydantic models** from `lunanav.schemas` (signatures in §7). No module calls another over HTTP.
-3. **Allowed imports:** `api` → everything · `astro` → `terrain.dem` (read-only DEM access for horizon masks) · `decision` → `schemas` only · `terrain` → `coords`, `schemas`. Nothing else crosses folders.
-4. **`decision/` is pure**: it receives metrics and returns scores. It never reads files or computes terrain/illumination.
-5. **Three data modes** controlled by env `LUNANAV_DATA_MODE`:
-   - `fixtures` – the API returns hand-written JSON from `mock_data/`. Available on day 0 so P1 is never blocked.
-   - `synthetic` – the real pipeline runs on a **synthetic DEM GeoTIFF** generated by P2 (same projection, format and resolution as LOLA). Proves the science code works.
-   - `real` – same pipeline on the challenge datasets.
-6. **Expensive results are cached** on disk under `data/cache/` keyed by `(object_id, arrival_utc date, data_mode, contract_version)`.
+1. **The API is the only thing the frontend talks to.** The frontend never computes science. It only formats, animates and interpolates what the API sends.
+2. **Modules talk through plain Python functions** that return JSON-ready dicts (§6). No module calls another over HTTP.
+3. **Allowed imports:** `app` → everything · `astro` → `terrain.dem` (read-only, for horizons; falls back to `astro/lola_dem.py` when P2's module is absent) · `decision` → nothing but the metric dicts it is given · `terrain` → `coords`.
+4. **`decision/` is pure**: metrics in, verdict + reasons out. It never reads the DEM or computes illumination.
+5. **No silent fallbacks.** If the DEM does not cover a site, astro uses the smooth-sphere horizon and says so in `method` and `warnings`. The UI must show that warning on the card.
+6. **Cache** results on disk keyed by `(site id or rounded lat/lon, start_utc, window_days, step_h, method)`. A full lunar day with a DEM horizon takes about a second; a 12-row sweep is about 12×.
 
 ---
 
-## 5. Repository structure
+## 4. Repository structure
+
+What exists now is marked ✔. The rest is to be created by its owner.
 
 ```
-lunanav/
-├── README.md                     ← this file
+Luna-Nav/
+├── README.md                          ✔ this file
+├── agents/                            ✔ AGENT_P1_frontend.md … AGENT_P5_backend.md
 ├── docs/
-│   ├── agents/                   ← AGENT_P1_frontend.md … AGENT_P5_backend.md
-│   ├── methodology.md            ← data sources + methods (P2, P3, P4 write; goes into the PDF)
-│   └── decisions.md              ← short log of decisions (date, decision, who)
-├── contracts/                    ← P5 owns; changes only via "contract" PR (§10)
-│   ├── openapi.json              ← exported from FastAPI, committed
-│   ├── coord_test_vectors.json   ← lat/lon ↔ polar-stereo ↔ 3D test points (P2 creates)
-│   └── CHANGELOG.md              ← every contract change, with version bump
-├── mock_data/                    ← fixtures, valid against the schemas (CI checks it)
-│   ├── mission_plan.json
-│   ├── criteria.json
-│   ├── regions.geojson
-│   ├── zones/REG-01.geojson …
-│   ├── evaluations/zones_example.json
-│   ├── points/REG-01-Z01.json …
-│   └── heightmaps/REG-01.json …
-├── data/                         ← gitignored (except data/README.md)
-│   ├── raw/                      ← downloaded datasets (LOLA GeoTIFFs, kernels…)
-│   ├── synthetic/                ← synthetic DEM GeoTIFFs (P2 script output)
-│   ├── processed/                ← derived rasters: slope, roughness, hazard masks
-│   └── cache/
-├── frontend/                     ← P1
-│   ├── package.json
+│   ├── methodology.md                 ✔ data sources + methods (P3 astronomy part done)
+│   ├── validation_lola_illumination.csv ✔ our numbers vs NASA PGDA illumination maps
+│   ├── explainers/                    ← P4: short public explainer texts (markdown)
+│   └── decisions.md                   ← one line per decision: date, decision, who
+├── mock_data/
+│   └── astro/                         ✔ real outputs of the P3 functions (P1/P5 build on these)
+│       ├── sites.json                 ✔ the 26-site catalog as served by /sites
+│       ├── site_conditions_connecting-ridge.json   ✔ screen 2
+│       ├── site_conditions_im-1.json  ✔ screen 2 (second example)
+│       ├── site_timeline_connecting-ridge.json     ✔ screen 3
+│       ├── compare_four_sites.json    ✔ screen 4
+│       └── date_sweep_connecting-ridge.json        ✔ screen 5
+├── data/                              ← git-ignored: LOLA DEM, PGDA maps, SPICE kernels
+│   └── raw/dem/ · raw/illumination/ · kernels/
+├── frontend/                          ← P1
 │   └── src/
-│       ├── app/                  ← App shell, routing between layers, starfield
-│       ├── scenes/               ← EarthMoonScene.tsx, MoonScene.tsx, CameraRig.tsx
-│       ├── layers/               ← L1Mission/, L2Regions/, L3Zones/, L4Points/
-│       ├── components/           ← InfoCard, CollapsiblePanel, ComparisonChart, …
-│       ├── api/                  ← client.ts, types.gen.ts (generated), fixtures.ts
-│       ├── state/missionStore.ts ← zustand store (§8)
-│       └── lib/coords.ts         ← TS port of coords.py, tested with coord_test_vectors.json
+│       ├── screens/                   ← ScenarioBuilder, SiteView, Timeline, Compare, DateSweep
+│       ├── components/                ← ScenarioCard, HorizonView, Countdown, WindowBars, VerdictBadge
+│       ├── api/                       ← client.ts, types.ts, fixtures (= mock_data/astro)
+│       └── state/scenarioStore.ts     ← §7
 ├── backend/
-│   ├── pyproject.toml
+│   ├── requirements.txt               ✔ P5 (FastAPI); merge astro deps from astro/requirements-astro.txt
+│   ├── app/                           ✔ P5 FastAPI app (main.py, api/, services/, integrations/, models/)
 │   ├── lunanav/
-│   │   ├── schemas/              ← Pydantic models = SOURCE OF TRUTH for all contracts (P5)
-│   │   ├── coords.py             ← projections & conversions (P2)
-│   │   ├── config.py             ← constants (§6), env vars (P5)
-│   │   ├── terrain/              ← P2
-│   │   ├── astro/                ← P3
-│   │   ├── decision/             ← P4
-│   │   ├── report/               ← PDF generation (P5)
-│   │   └── api/                  ← FastAPI app, routes, services/pipeline.py (P5)
+│   │   ├── astro/                     ✔ P3 (see astro/README.md)
+│   │   ├── terrain/                   ← P2 (dem.py may simply adopt astro/lola_dem.py)
+│   │   ├── coords.py                  ← P2
+│   │   └── decision/                  ← P4 (verdict.py, explain.py)
 │   └── tests/
-│       ├── terrain/ astro/ decision/   ← owners' unit tests
-│       └── integration/          ← P5: contract + end-to-end tests
-├── scripts/
-│   ├── terrain/make_synthetic_dem.py, preprocess_dem.py   (P2)
-│   ├── astro/fetch_kernels.py                             (P3)
-│   └── precompute.py                                      (P5, calls everyone)
-├── docker-compose.yml
-└── .github/workflows/ci.yml      ← lint + tests + fixture validation + openapi drift check
+│       ├── astro/                     ✔ 71 tests (69 pass + 2 skip when the DEM / PGDA files are absent)
+│       └── …                          ✔ P5 API tests
+└── scripts/
+    ├── astro/                         ✔ fetch_kernels.py, fetch_lola_dem.py, validate_horizons.py,
+    │                                    validate_lola_illumination.py, scenario_demo.py, make_samples.py
+    └── terrain/                       ← P2
 ```
 
-**Tooling:** Python 3.11, `uv` (or pip) · FastAPI, Pydantic v2, numpy, scipy, rasterio, pyproj, shapely · pytest, ruff.
-Node 20 · Vite, React 18, TypeScript (strict), three, @react-three/fiber, @react-three/drei, zustand, @tanstack/react-query, recharts, openapi-typescript · vitest.
+**Tooling:** Python 3.11+, FastAPI, Pydantic v2, numpy, rasterio (DEM), spiceypy (optional), pytest.
+Frontend: Node 20, Vite, React 18, TypeScript; any chart lib (recharts suggested). Plain SVG/canvas is
+enough for the horizon view; three.js is optional.
+
+**Setup (Windows, as used by P3):**
+```powershell
+cd backend
+py -m pip install -r requirements.txt -r lunanav\astro\requirements-astro.txt
+py ..\scripts\astro\fetch_lola_dem.py          # 181 MB real DEM → data\raw\dem\
+py ..\scripts\astro\fetch_kernels.py           # optional SPICE kernels
+py -m pytest tests\astro -q
+py ..\scripts\astro\scenario_demo.py           # prints the 4-site comparison
+```
 
 ---
 
-## 6. Conventions (non-negotiable)
+## 5. Conventions (non-negotiable)
 
-### 6.1 Units are in the field name
-Every numeric field ends with its unit. No exceptions, no unit-less numbers except IDs, ranks and 0–1 normalized scores.
+### 5.1 Units are in the field name
+Every numeric field ends with its unit.
 
 | Suffix | Meaning | Suffix | Meaning |
 |---|---|---|---|
 | `_m` | metres | `_km` | kilometres |
 | `_deg` | degrees | `_pct` | percent, 0–100 |
-| `_h` | hours | `_km2` | square km |
-| `_per_km2` | count per km² | `_utc` | ISO-8601 UTC string, always ending in `Z`, e.g. `2027-03-14T12:00:00Z` |
+| `_h` | hours | `_w_m2` | W per m² |
+| `_kwh_m2` | kWh per m² | `_utc` | ISO-8601 UTC string ending in `Z`, e.g. `2027-01-10T00:00:00Z` |
 
-`score` = 0–100 (higher is better). `normalized` = 0–1 (1 = best). `rank` = 1 is best.
+Human-readable durations come pre-formatted in `*_text` fields (`"3 d 4 h 12 min"`). The frontend shows
+those instead of formatting hours itself.
 
-### 6.2 Lunar coordinates
+### 5.2 Lunar coordinates
 - **Body:** Moon, sphere of radius `MOON_RADIUS_M = 1_737_400` (LOLA reference).
 - **Frame:** Moon Mean-Earth / Polar-axis (ME) body-fixed frame (the frame LOLA products use).
-- **Lat/lon:** planetocentric, **degrees**; latitude −90…90 (south pole = −90); longitude **east-positive, −180…180**.
-- **Elevation:** `elevation_m` = metres above the 1737.4 km sphere (can be negative).
-- **GeoJSON order is `[lon_deg, lat_deg]`** (standard GeoJSON). Everywhere else we write explicit `lat_deg`, `lon_deg` fields — never anonymous pairs.
-- **Map projection for rasters:** south polar stereographic on the sphere:
-  `+proj=stere +lat_0=-90 +lon_0=0 +k=1 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs`
+- **Lat/lon:** planetocentric, **degrees**; latitude −90…90 (south pole = −90); longitude **east-positive, −180…180**. Inputs outside that range are normalized (`sites.normalize_latlon`).
+- **Elevation:** `elevation_m` = metres above the 1737.4 km sphere (can be negative). If the user gives none, it is sampled from the DEM.
+- Always explicit `lat_deg`, `lon_deg` fields, never anonymous pairs (GeoJSON, if used, is `[lon, lat]`).
+- **DEM projection:** south polar stereographic on the sphere, exactly what the PGDA LOLA files use:
+  `+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs`
   - forward: `ρ = 2R·tan(π/4 + φ/2)`, `x_m = ρ·sin λ`, `y_m = ρ·cos λ`
   - inverse: `ρ = √(x²+y²)`, `φ = 2·atan(ρ/2R) − π/2`, `λ = atan2(x, y)`
-  - If a LOLA product ships with a different projection, P2 reprojects it into this one in preprocessing.
-- **Azimuth:** degrees clockwise from local north (0–360). **Elevation angle:** degrees above the local horizontal plane.
+- **DEM coverage:** 80–90°S. Sites north of 80°S (Apollo, most CLPS, Chang'e…) use the **smooth-sphere** horizon and carry a warning. That is correct behaviour, not a bug.
+- **Azimuth:** degrees clockwise from local north (0–360), north = toward the lunar north pole along the local meridian. **Elevation angle:** degrees above the local horizontal plane.
 
-### 6.3 3D scene conventions (frontend, also used by P3 when sending vectors)
-- **L1 scene (Earth-centred):** frame J2000 Earth-centred inertial; API sends `pos_km`. Display scale `1 unit = 1000 km`. Bodies may be visually enlarged (`BODY_VISUAL_SCALE`), but **positions are always true scale**.
-- **L2–L4 scene (Moon-centred):** Moon at origin, `1 unit = 1 km`, ME frame.
-- **Axis mapping (both scenes), three.js is Y-up:** `three.x = X`, `three.y = Z`, `three.z = −Y` where (X, Y, Z) is the physical frame (Z = north pole / celestial north).
-- Surface point → 3D: `r = (MOON_RADIUS_M + elevation_m · VERTICAL_EXAGGERATION) / 1000`,
-  `X = r cosφ cosλ`, `Y = r cosφ sinλ`, `Z = r sinφ`, then apply the axis mapping.
-- `VERTICAL_EXAGGERATION` is a frontend-only display setting (default 3). Never send exaggerated values from the backend.
-- `contracts/coord_test_vectors.json` holds ~10 points with lat/lon/elevation → x_m/y_m → three.js xyz. Both `coords.py` and `coords.ts` must pass them.
+### 5.3 Time
+- Each scenario card has its own **landing date** = `start_utc`.
+- **Analysis window** = `[start_utc, start_utc + window_days]`, default **one lunar day**, `window_days = 29.530589` (synodic month).
+- Sampling: `step_h = 0.5` for `site_conditions`, `1.0` for timeline / compare / sweep. Events (sunrise, sunset, earthrise, earthset) are refined by bisection to ≤ 30 s.
+- Valid date range is limited by the ephemeris (analytic model ~1900–2100; SPICE DE440 longer). Out-of-range dates come back as an error, never as a crash.
 
-### 6.4 Time
-- The **mission time** is `arrival_utc` chosen in L1. Every L2–L4 request carries it as a query/body parameter.
-- **Analysis window** for illumination & Earth visibility = `[arrival_utc, arrival_utc + SURFACE_STAY_DAYS]`, default `SURFACE_STAY_DAYS = 7`, time step `ANALYSIS_STEP_H = 1`.
+### 5.4 Definitions (so everyone says the same thing in the video)
+- **Sunlit** = centre of the solar disk above the local terrain horizon at the Sun's azimuth. `disk_visible_fraction` tells how much of the disk is up (at the poles the Sun skims the horizon for days).
+- **Earth visible** = centre of the Earth disk above the local horizon. This is **geometric line of sight only**, not a radio link budget (see `COMMS_NOTE` in the output).
+- **Power** = geometry only: irradiance at the Moon's distance from the Sun (1361 W/m² at 1 AU) × visible disk fraction × cos(Sun elevation) for a vertical panel facing the Sun. No efficiency, temperature or dust.
+- **Power + comms** = times when both are true.
 
-### 6.5 IDs
-Stable, human-readable strings, hierarchical:
-- region `REG-01` · zone `REG-01-Z03` · point `REG-01-Z03-P07`
-- criterion ids are snake_case (`slope_mean`, `illumination`, …), defined in `criteria.json`.
+### 5.5 IDs
+- Site ids are the catalog's kebab-case ids (`connecting-ridge`, `im-1`, `malapert-massif`…). A user-typed coordinate gets `id: null`, `category: "custom"`, `coord_quality: "user_input"`.
+- Scenario card ids are frontend-only (`card-1`…). The API identifies a scenario by its `label` (auto: `"<site name> @ <YYYY-MM-DD>"`; numbered if two cards collide).
 
-### 6.6 Shared constants (`backend/lunanav/config.py`, mirrored in `frontend/src/lib/constants.ts`)
-`MOON_RADIUS_M=1737400` · `EARTH_RADIUS_KM=6371` · `SURFACE_STAY_DAYS=7` · `ANALYSIS_STEP_H=1` · `ZONES_TO_COMPARE=3` · `CONTRACT_VERSION="0.1.0"` · `SOUTH_POLE_MAX_LAT_DEG=-80` (study area is south of 80°S).
+### 5.6 Shared constants
+`MOON_RADIUS_M = 1737400` · `SYNODIC_MONTH_D = 29.530589` · `SOLAR_CONSTANT_W_M2 = 1361` ·
+`AU_KM = 149597870.7` · `EARTH_RADIUS_KM = 6371` · `SUN_RADIUS_KM = 695700` · `REFINE_TOL_S = 30` ·
+`MAX_SAMPLES = 20000` · `MIN_CARDS = 2`, `MAX_CARDS = 4` (UI; the API accepts 1–12) ·
+`SWEEP_N = 12`, `SWEEP_EVERY_D = 29.530589` (API accepts n = 1–36) · DEM `LDEM_80S_80MPP_ADJ.TIF`, horizon
+360 azimuth bins, rays to 100 km. Astro constants live in `astro/scenarios.py`; the frontend mirrors the UI ones in
+`frontend/src/lib/constants.ts`.
 
 ---
 
-## 7. Data contracts
+## 6. Data contracts
 
-The **Pydantic models in `backend/lunanav/schemas/` are the source of truth**. FastAPI exports them to
-`contracts/openapi.json`; the frontend generates `src/api/types.gen.ts` from it (`npm run gen:api`).
-The shapes below are written in TypeScript notation for readability; the Pydantic models must match them exactly.
+The **P3 functions in `backend/lunanav/astro/scenarios.py` and their real outputs in
+`mock_data/astro/` are the source of truth** for the science shapes. P5's Pydantic models in
+`backend/app/models/` must accept them unchanged; P1 types them from the same files. If a field
+is unclear, open the JSON in `mock_data/astro/`: it is a real run, not a hand-written guess.
 
-### 7.1 Common pieces
+### 6.1 Common envelope (every P3 result)
 
 ```ts
-type UTC = string;                         // "2027-03-14T12:00:00Z"
+type UTC = string;                         // "2027-01-10T00:00:00Z"
 
-interface Meta {                           // present on EVERY response, field name "meta"
-  contract_version: string;                // "0.1.0"
-  data_mode: "fixtures" | "synthetic" | "real";
-  generated_utc: UTC;
-  sources: string[];                       // e.g. ["LOLA LDEM 20 m/px (synthetic stand-in)"]
+interface Envelope {
+  status: "ok" | "error";
+  result_type: "ephemeris_calculation";
+  warnings: string[];                      // show them on the card
+  data_sources: { ephemeris_backend: string; ephemeris_source: string };   // analytic (Meeus) or SPICE DE440
+  limitations: string[];                   // methodology caveats, for the explainer / export
+}
+interface ErrorResult {                    // functions never raise on bad input
+  status: "error";
+  error: { code: string; message: string };// UNKNOWN_SITE, INVALID_COORDINATES, INVALID_WINDOW, INVALID_SCENARIOS, …
 }
 
-interface LatLon { lat_deg: number; lon_deg: number; }
+type SiteInput = string                     // catalog id, e.g. "im-1"
+               | { lat_deg: number; lon_deg: number; name?: string; elevation_m?: number };
 
-interface TerrainSummary {                 // P2 produces (region & zone level)
-  elevation_mean_m: number;
-  elevation_min_m: number;
-  elevation_max_m: number;
-  slope_mean_deg: number;
-  slope_max_deg: number;
-  slope_p95_deg: number;
-  roughness_rms_m: number;                 // RMS of detrended heights over ROUGHNESS_BASELINE_M (default 25 m)
-  crater_density_per_km2: number;          // craters ≥ CRATER_MIN_DIAMETER_M (default 10 m)
-  boulder_density_per_km2: number | null;  // null = no data
-  safe_area_pct: number;                   // % of cells passing the slope+roughness masks
-  surface_description: string;             // short text, e.g. "Ridge crest, gentle slopes, few small craters"
-}
-
-interface IlluminationSummary {            // P3 produces (any level)
-  window_start_utc: UTC;
-  window_end_utc: UTC;
-  illumination_pct: number;                // % of window with Sun (disk centre) above local horizon
-  longest_shadow_h: number;                // longest continuous dark period in window
-  sunlit_at_arrival: boolean;
-  sun_azimuth_deg_at_arrival: number;
-  sun_elevation_deg_at_arrival: number;
-  earth_visibility_pct: number;            // % of window with Earth above local horizon
-  earth_visible_at_arrival: boolean;
-  earth_azimuth_deg_at_arrival: number;
-  earth_elevation_deg_at_arrival: number;
-  method: "horizon_mask" | "smooth_sphere" | "fixture";
-}
-
-interface PreliminarySuitability {         // P4 produces (region level)
-  score: number;                           // 0–100
-  label: "high" | "medium" | "low";
-  notes: string[];
-}
-
-interface Explanation {                    // P4 produces
-  summary: string;                         // 2–4 sentences, why the winner wins
-  bullets: string[];
-  per_candidate: Record<string, { strengths: string[]; weaknesses: string[] }>;
-  generated_by: "template" | "llm";
+interface Site {
+  id: string | null; name: string; category: string;   // apollo | artemis | clps | international | south_pole_candidate | reference | custom
+  mission: string | null; agency: string | null;
+  coord_quality: "landed" | "approximate" | "exact" | "user_input";
+  lat_deg: number; lon_deg: number; elevation_m: number;
 }
 ```
 
-### 7.2 Layer 1 — Mission
+### 6.2 Screen 1: sites
 
 ```ts
-// POST /api/v1/mission/plan
-interface MissionPlanRequest {
-  arrival_utc: UTC;
-  transfer_days?: number;                  // default 4.0
+// GET /api/sites?category=artemis      → { status, sites: Site[] }   (26 sites, see mock_data/astro/sites.json)
+// GET /api/sites/{id}                  → { status, site: Site }
+```
+Python: `list_sites(category=None)`, `get_site(site_id)`, `resolve_site(site)`.
+
+### 6.3 Screen 2: site conditions
+
+```ts
+// POST /api/scenarios/conditions  { site: SiteInput, start_utc: UTC, window_days?: number }
+// Python: site_conditions(site, start_datetime, window_days=29.530589, step_h=0.5, terrain_data=None)
+interface BodyNow {
+  azimuth_deg: number; elevation_deg: number;
+  horizon_elevation_deg: number;           // terrain horizon height at that azimuth
+  margin_above_horizon_deg: number;        // elevation − horizon; > 0 = up
+  visible: boolean; disk_visible_fraction: number;      // 0..1
+  apparent_radius_deg: number; distance_km: number;
 }
-
-interface TimedPosition { t_utc: UTC; pos_km: [number, number, number]; }   // J2000 Earth-centred
-
-interface MissionPlan {
-  meta: Meta;
-  arrival_utc: UTC;
-  launch_utc: UTC;
-  transfer_duration_h: number;
-  interception_window: { start_utc: UTC; end_utc: UTC };
-  earth_moon_distance_km: number;          // centre to centre at arrival
-  frame: "J2000_ECI";
-  moon_track: TimedPosition[];             // Moon from launch−1 day to arrival+1 day, ≤ 1 h step
-  trajectory: TimedPosition[];             // spacecraft from launch to arrival, ≥ 100 samples
-  sun_direction_eci: [number, number, number];  // unit vector Earth→Sun at arrival (for scene lighting)
-  parameters: { key: string; label: string; value: number | string; unit: string }[];  // extra rows for info panel
+interface Countdown {
+  next_event: "sunset" | "sunrise" | "earthset" | "earthrise";
+  next_event_utc: UTC | null; time_remaining_h: number | null; time_remaining_text: string | null;
+  beyond_window: boolean;                  // true = no change during the whole window
+  summary: string;                         // "Earthrise in 21 h 37 min" / "Sun stays up for the whole 29.5-day window"
+}
+interface Window {                         // one continuous interval
+  start_utc: UTC; end_utc: UTC; duration_h: number; duration_text: string; starts_in_h: number;
+  open_at_window_start: boolean; open_at_window_end: boolean;   // clipped by the analysis window
+}
+interface Metrics {
+  sunlight_pct: number; sunlight_hours: number; longest_darkness_h: number;
+  earth_visibility_pct: number; earth_visible_hours: number; longest_comms_gap_h: number;
+  power_and_comms_pct: number;
+  sun_elevation_deg_max: number; sun_elevation_deg_min: number; sun_elevation_deg_mean_when_lit: number | null;
+  earth_elevation_deg_max: number; earth_elevation_deg_min: number;
+  mean_vertical_panel_factor: number; mean_horizontal_panel_factor: number;
+  vertical_panel_energy_kwh_m2: number; n_sunsets: number; n_earthsets: number;
+  libration_lat_range_deg: [number, number]; libration_lon_range_deg: [number, number];
+}
+interface SiteConditions extends Envelope {
+  site: Site;
+  method: "horizon_mask" | "smooth_sphere";
+  window: { start_utc: UTC; end_utc: UTC; duration_h: number; duration_days: number;
+            sampling_interval_h: number; n_samples: number };
+  now: { t_utc: UTC; sun: BodyNow; earth: BodyNow;
+         power: { irradiance_w_m2: number; vertical_panel_factor: number;
+                  horizontal_panel_factor: number; vertical_panel_w_m2: number };
+         libration: { sub_earth_lat_deg: number; sub_earth_lon_deg: number };
+         sub_solar: { lat_deg: number; lon_deg: number } };
+  countdown: { sun: Countdown; earth: Countdown };
+  next_events: { event: string; t_utc: UTC; in_h: number; in_text: string }[];
+  windows: { sunlit: Window[]; earth_visible: Window[]; power_and_comms: Window[] };
+  metrics: Metrics;
 }
 ```
-The trajectory is an **approximate, visual** transfer (patched-conic / Lambert-style), not a flight-dynamics product. That is stated in the methodology.
+"Now" means **the landing moment** (`start_utc`). For a live countdown in the UI, P1 subtracts the time
+moved on the slider from `time_remaining_h`, or reads the next event from `next_events`.
 
-### 7.3 Layer 2 — Regions
-
-```ts
-// GET /api/v1/regions?arrival_utc=...
-type RegionCollection = { meta: Meta } & GeoJSON.FeatureCollection<GeoJSON.Polygon, RegionProperties>;
-
-interface RegionProperties {
-  id: string;                              // "REG-01"
-  name: string;                            // "Connecting Ridge"
-  center: LatLon;
-  area_km2: number;
-  terrain: TerrainSummary;
-  illumination: IlluminationSummary | null;   // null only if arrival_utc omitted
-  suitability: PreliminarySuitability;
-}
-
-// GET /api/v1/regions/{region_id}?arrival_utc=...
-// → { meta, region: GeoJSON.Feature<Polygon, RegionProperties> }
-
-// GET /api/v1/terrain/heightmap?area_id=REG-01&max_size=256
-interface Heightmap {
-  meta: Meta;
-  area_id: string;
-  crs: "moon_south_polar_stereo";          // projection in §6.2
-  bbox_m: { xmin: number; ymin: number; xmax: number; ymax: number };
-  width: number; height: number;           // ≤ max_size
-  resolution_m: number;
-  elevation_min_m: number; elevation_max_m: number;
-  encoding: "float32_base64";              // row-major, row 0 = ymax (GeoTIFF order), little-endian
-  nodata_value: number;                    // -32768
-  data: string;
-}
-```
-
-### 7.4 Layer 3 — Zones and evaluation
+### 6.4 Screen 3: timeline
 
 ```ts
-// GET /api/v1/regions/{region_id}/zones?arrival_utc=...
-type ZoneCollection = { meta: Meta } & GeoJSON.FeatureCollection<GeoJSON.Polygon, ZoneProperties>;
-
-interface ZoneProperties {
-  id: string;                              // "REG-01-Z03"
-  region_id: string;
-  name: string;                            // "Zone 3"
-  center: LatLon;
-  area_km2: number;
-  terrain: TerrainSummary;
-  illumination: IlluminationSummary;
-}
-
-// GET /api/v1/criteria
-interface Criterion {
-  id: string;                              // "slope_mean"
-  label: string;                           // "Average slope"
-  source_field: string;                    // dotted path into the candidate, e.g. "terrain.slope_mean_deg"
-  unit: string;                            // "deg"
-  direction: "lower_is_better" | "higher_is_better";
-  levels: ("zone" | "point")[];
-  default_weight: { zone?: number; point?: number };   // weights per level sum to 1
-  normalization: { type: "linear"; best: number; worst: number };   // clipped to [0,1]
-  hard_limit: { op: "<=" | ">="; value: number } | null;            // violates → not eligible
-}
-// → { meta, criteria: Criterion[] }
-
-// POST /api/v1/evaluate/zones
-interface ZoneEvaluationRequest {
-  arrival_utc: UTC;
-  region_id: string;
-  zone_ids: [string, string, string];      // exactly 3, else HTTP 422
-  weights?: Record<string, number>;        // optional override; renormalized to sum 1
-  method?: "weighted_sum" | "topsis";      // default "weighted_sum"
-}
-
-interface CriterionScore {
-  criterion_id: string;
-  raw_value: number | null;
-  unit: string;
-  normalized: number;                      // 0–1, 1 = best
-  weight: number;
-  contribution: number;                    // weight × normalized × 100
-  passes_hard_limit: boolean;
-}
-
-interface CandidateScore {
-  id: string;
-  rank: number;                            // 1 = best; ineligible candidates ranked after eligible ones
-  score: number;                           // 0–100
-  eligible: boolean;
-  disqualifiers: string[];                 // "slope_max 16.2 deg > limit 15 deg"
-  criteria: CriterionScore[];
-}
-
-interface Evaluation {                     // same shape for zones and points
-  meta: Meta;
-  level: "zone" | "point";
-  method: "weighted_sum" | "topsis";
-  weights_used: Record<string, number>;
-  candidates: CandidateScore[];            // sorted by rank
-  recommended_id: string | null;           // null if nothing eligible
-  sensitivity: { stable: boolean; winner_share_pct: number; notes: string };
-       // winner_share_pct = % of random weight perturbations (±20%) where the winner stays #1
-  explanation: Explanation;
-}
-// POST /evaluate/zones → Evaluation (level = "zone")
-```
-
-### 7.5 Layer 4 — Points
-
-```ts
-// GET /api/v1/zones/{zone_id}/points?arrival_utc=...&n=10
-interface PointProperties {
-  id: string;                              // "REG-01-Z03-P07"
-  zone_id: string;
-  lat_deg: number; lon_deg: number;
-  x_m: number; y_m: number;                // polar stereo
-  elevation_m: number;
-  terrain_local: {
-    slope_deg: number;                     // over LANDER_FOOTPRINT_M (default 20 m)
-    roughness_rms_m: number;
-    distance_to_nearest_crater_m: number;
-    distance_to_nearest_hazard_m: number;
-    nearest_hazard_type: "crater" | "steep_slope" | "boulder" | "shadow" | "other";
+// POST /api/scenarios/timeline  { site: SiteInput, start_utc: UTC, days?: number, step_h?: number }
+// Python: site_timeline(site, start_datetime, days=29.530589, step_h=1.0, terrain_data=None)
+interface SiteTimeline extends SiteConditions {
+  series: {                                // parallel arrays, one entry per sample
+    t_utc: UTC[]; hours_from_start: number[];
+    sun_azimuth_deg: number[]; sun_elevation_deg: number[]; sun_horizon_deg: number[];
+    sun_disk_visible_fraction: number[];
+    earth_azimuth_deg: number[]; earth_elevation_deg: number[]; earth_horizon_deg: number[];
+    earth_visible: boolean[]; irradiance_w_m2: number[];
   };
-  illumination: IlluminationSummary;       // method should be "horizon_mask" in synthetic/real modes
-}
-
-interface PointsResult {
-  meta: Meta;
-  zone_id: string;
-  points: GeoJSON.FeatureCollection<GeoJSON.Point, PointProperties>;
-  evaluation: Evaluation;                  // level = "point"; recommended_id = optimal point
+  horizon_profile: { azimuth_deg: number[]; elevation_deg: number[]; method: string };  // 360 bins: draw this as the skyline
 }
 ```
+The three bars come from `windows.sunlit`, `windows.earth_visible`, `windows.power_and_comms` (use
+`starts_in_h` / `duration_h` against the 708.7 h window). ~709 samples per card is small enough to send whole.
 
-### 7.6 Report
+### 6.5 Screen 4: compare + verdict
 
 ```ts
-// POST /api/v1/report   → application/pdf
-interface ReportRequest {
-  mission: MissionPlan;
-  region: RegionProperties;
-  zones: ZoneProperties[];                 // the 3 compared
-  zone_evaluation: Evaluation;
-  points: PointsResult;
-  screenshots?: { label: string; png_base64: string }[];   // canvas captures from the frontend
+// POST /api/scenarios/compare  { scenarios: { site: SiteInput; start_utc: UTC; label?: string; window_days?: number }[] }   // 2–4 from the UI
+// Python: compare_scenarios(scenarios, window_days=29.530589, step_h=1.0, terrain_data=None)
+interface CompareRow {
+  label: string; site: Site; start_utc: UTC; method: string; warnings: string[];
+  sunlit_at_start: boolean; sun_elevation_deg_at_start: number;
+  earth_visible_at_start: boolean; earth_elevation_deg_at_start: number;
+  sun_countdown: Countdown; earth_countdown: Countdown;
+  metrics: Metrics; windows: SiteConditions["windows"];
+  verdict: Verdict;                        // added by P5 from P4's rule (not in the P3 output)
+}
+interface Compare extends Envelope {
+  n_scenarios: number; rows: CompareRow[];
+  best: Record<CompareKey, { label: string; value: number;
+                             direction: "higher_is_better" | "lower_is_better" }>;
+}
+type CompareKey = "sunlight_pct" | "longest_darkness_h" | "earth_visibility_pct" | "longest_comms_gap_h"
+                | "power_and_comms_pct" | "vertical_panel_energy_kwh_m2" | "sun_elevation_deg_max";
+
+interface Verdict {                        // P4: backend/lunanav/decision/verdict.py
+  level: "viable" | "marginal" | "not_viable";
+  reasons: string[];                       // ["Longest night 354 h > 72 h limit", …]
+  summary: string;                         // one plain-language sentence for the card
+  thresholds: Record<string, number>;      // the numbers actually used, shown in the UI tooltip
 }
 ```
-The report contains: mission configuration & dates, interception info, selected region, the 3 zones and their comparison, recommended zone, optimal coordinates, detailed parameters, and **data sources & methodology** (from `docs/methodology.md` + `meta.sources`).
 
-### 7.7 Endpoint summary (`/api/v1`)
+**Default verdict rule** (P4 owns and may tune it; whatever is used must be shown in the UI):
 
-| Method | Path | Returns | Producer modules |
-|---|---|---|---|
-| GET | `/health` | `{status, data_mode, contract_version}` | P5 |
-| POST | `/mission/plan` | `MissionPlan` | P3 |
-| GET | `/criteria` | `{meta, criteria}` | P4 |
-| GET | `/regions` | `RegionCollection` | P2 + P3 + P4 |
-| GET | `/regions/{id}` | `{meta, region}` | P2 + P3 + P4 |
-| GET | `/terrain/heightmap` | `Heightmap` | P2 |
-| GET | `/regions/{id}/zones` | `ZoneCollection` | P2 + P3 |
-| POST | `/evaluate/zones` | `Evaluation` | P4 |
-| GET | `/zones/{id}/points` | `PointsResult` | P2 + P3 + P4 |
-| POST | `/report` | PDF | P5 |
-| GET | `/meta/methodology` | `{markdown, sources}` | P5 (from docs) |
+| Level | Condition |
+|---|---|
+| **not viable** | `longest_darkness_h > 100` **or** `sunlight_pct < 30` **or** `earth_visibility_pct < 20` |
+| **viable** | `sunlight_pct ≥ 60` **and** `longest_darkness_h ≤ 50` **and** `earth_visibility_pct ≥ 50` **and** `longest_comms_gap_h ≤ 72` |
+| **marginal** | everything else |
 
-Errors: `{ "error": { "code": "ZONE_COUNT", "message": "...", "details": {} } }` with HTTP 4xx/5xx.
+Python: `verdict(metrics: dict, thresholds: dict | None = None) -> Verdict`. Pure function, metrics in, verdict out.
+The numbers describe a **solar-powered lander with ~4 days of battery and direct-to-Earth comms**, stated in the UI as our
+assumption, not a NASA rule. Metrics are computed over the card's window, so a shorter mission duration can change the verdict.
+On `compare_four_sites.json` (full lunar day from 2027-01-10) this gives: Connecting Ridge **marginal** (100 % sun, but a
+347 h comms gap → needs a relay), Malapert / IM-1 / Apollo 11 **not viable** (nights of 247–274 h).
 
-### 7.8 Python module interfaces (in-process)
+### 6.6 Screen 5: date sweep
 
-```python
-# terrain (P2) — lunanav/terrain/__init__.py
-def list_regions() -> list[RegionGeometry]                     # id, name, polygon (lon/lat), center, area
-def region_terrain(region_id: str) -> TerrainSummary
-def identify_zones(region_id: str, max_zones: int = 8) -> list[ZoneGeometryWithTerrain]
-def identify_points(zone_id: str, n: int = 10) -> list[PointGeometryWithTerrain]
-def get_heightmap(area_id: str, max_size: int = 256) -> Heightmap
-# terrain.dem — read-only DEM access (used by P3 for horizons)
-def sample_elevation(lat_deg: float, lon_deg: float) -> float
-def dem_window(center: LatLon, radius_m: float) -> tuple[np.ndarray, Affine]   # polar-stereo grid
-
-# astro (P3) — lunanav/astro/__init__.py
-def plan_mission(arrival_utc: datetime, transfer_days: float = 4.0) -> MissionPlan
-def sun_az_el(lat_deg, lon_deg, elevation_m, t_utc) -> tuple[float, float]
-def earth_az_el(lat_deg, lon_deg, elevation_m, t_utc) -> tuple[float, float]
-def horizon_mask(lat_deg, lon_deg, n_az: int = 360, max_dist_km: float = 100) -> np.ndarray  # elev angle per az bin
-def illumination_at(lat_deg, lon_deg, elevation_m, arrival_utc, use_horizon: bool = True) -> IlluminationSummary
-def illumination_area(samples: list[LatLon], arrival_utc) -> IlluminationSummary   # aggregate over sample points
-
-# decision (P4) — lunanav/decision/__init__.py   (pure functions, no I/O except reading criteria config)
-def get_criteria() -> list[Criterion]
-def preliminary_suitability(terrain: TerrainSummary, illum: IlluminationSummary | None) -> PreliminarySuitability
-def evaluate(candidates: list[Candidate], level: Literal["zone","point"],
-             weights: dict[str, float] | None = None, method: str = "weighted_sum") -> Evaluation
-def explain(evaluation: Evaluation, candidates: list[Candidate]) -> Explanation
+```ts
+// POST /api/scenarios/date-sweep  { site: SiteInput, first_start_utc: UTC, n?: number, every_days?: number }
+// Python: date_sweep(site, first_start_datetime, n=12, every_days=29.530589, window_days=None, step_h=1.0, terrain_data=None)
+interface DateSweep extends Envelope {
+  site: Site; every_days: number; window_days: number;
+  rows: (Omit<CompareRow, "windows" | "verdict"> & { sub_solar_lat_deg: number; verdict?: Verdict })[];   // label = "YYYY-MM-DD"
+  best: Compare["best"];
+}
 ```
-`Candidate` = `{id, terrain | terrain_local, illumination}`; P4 reads values through `Criterion.source_field`.
+"Add as card" = new card with the same site and `start_utc = row.start_utc`.
+
+### 6.7 Endpoint summary (`/api`, P5's existing prefix)
+
+| Method | Path | Returns | Producer |
+|---|---|---|---|
+| GET | `/health` | `{status, ...}` | P5 |
+| GET | `/api/sites`, `/api/sites/{id}` | §6.2 | P3 |
+| POST | `/api/scenarios/conditions` | `SiteConditions` | P3 |
+| POST | `/api/scenarios/timeline` | `SiteTimeline` | P3 |
+| POST | `/api/scenarios/compare` | `Compare` (+ verdicts) | P3 + P4 |
+| POST | `/api/scenarios/date-sweep` | `DateSweep` (+ verdicts) | P3 + P4 |
+| GET | `/api/explainers` | `{id, title, markdown}[]` (optional) | P4 |
+| POST | `/api/export` | CSV / JSON of a `Compare` (optional) | P5 |
+
+Errors: P3 results with `status: "error"` become HTTP 422 with `{ "error": { code, message } }`.
+The old `/api/mission`, `/regions`, `/zones`, `/points`, `/reports` routes in `backend/app/api/` are
+retired: P5 removes them (or leaves them unregistered) once the new routes work.
 
 ---
 
-## 8. Frontend state & navigation (P1, everyone should know it)
+## 7. Frontend state (P1, everyone should know it)
 
 ```ts
-interface MissionState {
-  layer: 1 | 2 | 3 | 4;
-  arrivalUtc: string | null;
-  missionPlan: MissionPlan | null;          // confirmed in L1
-  selectedRegionId: string | null;          // L2
-  zoneSelection: string[];                  // L3, max 3, order of clicking
-  zoneEvaluation: Evaluation | null;        // L3
-  pointsResult: PointsResult | null;        // L4
-  selectedPointId: string | null;           // L4
+interface ScenarioCard {
+  id: string;                     // "card-1"
+  site: SiteInput;                // catalog id or {lat_deg, lon_deg, name?}
+  startUtc: string;
+  windowDays?: number;            // mission duration, default 29.530589
+  label?: string;
+}
+interface ScenarioState {
+  cards: ScenarioCard[];          // 2..4
+  activeCardId: string | null;    // the card shown in site view / timeline
+  sliderHours: number;            // 0 .. 708.7, position on the timeline
+  sweepSiteId: string | null;     // site of the open date sweep
 }
 ```
-- Going **back** never clears anything.
-- Changing an **upstream input** clears only what depends on it: new `arrivalUtc` → clears `missionPlan`, `zoneEvaluation`, `pointsResult` (keeps region + zone selection, re-fetches). New region → clears zone selection and everything after.
-- State persisted to `sessionStorage` so a refresh does not lose progress.
+- Results are fetched per card and cached by `(site, startUtc)` (TanStack Query or a simple map).
+- Changing a card's site or date only refetches that card and the comparison.
+- State in `sessionStorage` (and optionally the URL) so a refresh or a shared link keeps the cards.
 
 ---
 
-## 9. Mock-data plan
+## 8. Mock data & working order
 
-The point: **nobody waits for anybody, and nobody waits for the datasets.**
+Nobody waits for anybody:
 
-| Stage | When | What exists | Who |
-|---|---|---|---|
-| **Fixtures** | Prep (before kickoff) | Hand-written JSON in `mock_data/` for every endpoint, validated by the Pydantic models. 6 regions, 6–8 zones in each of 2 regions, 10 points in 2 zones. API runs in `fixtures` mode. | P5 writes, owners review their parts |
-| **Synthetic** | Prep → Day 1 morning | `scripts/terrain/make_synthetic_dem.py` builds a south-polar stereographic GeoTIFF (e.g. 20 m/px, ~300×300 km around the pole) from fractal noise + crater bowls + ridges. Whole pipeline (slope → zones → points → illumination with horizons → scoring) runs on it. | P2 builds DEM; P3, P4 run on it; P5 wires `synthetic` mode |
-| **Real** | As soon as datasets are released | Replace the GeoTIFF path / kernel paths in config, rerun `scripts/precompute.py`. | P2 + P3 lead, P5 verifies |
+- **P1** builds every screen against the files in `mock_data/astro/` from day 0. They are real outputs, so switching to the live API changes nothing in the shapes. Add a fake `verdict` to the compare fixture until P4's rule is in.
+- **P5** wires the routes to the P3 functions directly (they are fast and already real); `mock_data/astro/` serves as the API test fixtures.
+- **P4** writes `verdict()` against the `metrics` objects in `compare_four_sites.json` and `date_sweep_connecting-ridge.json`.
+- **P2** adopts or wraps `astro/lola_dem.py` as `lunanav.terrain.dem` and adds slope at site / heightmap if time allows.
+- Regenerate fixtures after any astro change: `py scripts\astro\make_samples.py`.
 
-Mock content guidance:
-- Region names can follow well-known south-pole sites (e.g. Shackleton rim, Connecting Ridge, de Gerlache rim, Malapert massif, Nobile rim, Haworth) but **coordinates in fixtures are placeholders** until checked against real data. Mark them `"sources": ["placeholder"]`.
-- Fixtures must be **plausible and varied** so the UI and scoring show real differences: slopes 2–20°, illumination 20–90 %, Earth visibility 0–100 %, at least one zone that fails a hard limit, one zone pair with close scores.
-- Likely real datasets (to be confirmed by the challenge): LOLA south-polar DEMs (GeoTIFF, 5–20 m/px), LOLA-derived slope/roughness maps, illumination/average-sunlight maps, LROC imagery, NAIF SPICE kernels for ephemerides. Whatever arrives, it gets converted into our projection/units in preprocessing, not in the business logic.
+A good demo set (in the fixtures): **Connecting Ridge** (near-permanent sunlight, Earth only part-time),
+**Malapert Massif** (Earth always up, less Sun), **IM-1 Odysseus** (a real landing that ran out of power),
+**Apollo 11** (equatorial contrast: a two-week night).
+
+---
+
+## 9. Validation (say this in the video)
+
+| Check | Result | How |
+|---|---|---|
+| Sun/Earth positions vs **JPL Horizons** | **25/25 pass** (≤ 2.8 km, ≤ 0.012° with the analytic model; SPICE DE440 closer) | `scripts/astro/validate_horizons.py` |
+| Our sunlight % vs **NASA PGDA** average-illumination maps (LOLA, Mazarico et al.) | **~1 percentage point median difference** | `scripts/astro/validate_lola_illumination.py`, results in `docs/validation_lola_illumination.csv` |
+| Unit tests | **71 tests**: 69 pass + 2 skip when the DEM / PGDA files are not downloaded | `py -m pytest backend/tests/astro -q` |
+
+Methodology and limitations: `docs/methodology.md` and `backend/lunanav/astro/README.md`.
 
 ---
 
 ## 10. Collaboration rules
 
-- **Branches:** `main` is always demo-able. Work on `p1/<topic>`, `p2/<topic>`… Small PRs, merge often.
-- **Reviews:** P5 reviews everything that touches `api/`, `schemas/`, `contracts/`, `mock_data/`. Owners review changes in their folder.
-- **Contract changes** (anything in §6–§7): open a PR labelled `contract` that updates **together** the Pydantic model, `contracts/openapi.json`, the fixtures, `contracts/CHANGELOG.md` and bumps `CONTRACT_VERSION`. Every affected owner approves. Adding an optional field = minor bump; renaming/removing = needs team agreement in chat first.
-- **Don't edit another person's folder.** Open an issue or ping them. Exception: P5 may fix imports/wiring.
-- **CI must stay green:** ruff, pytest, fixture validation, OpenAPI drift check (`openapi.json` matches the code), frontend typecheck + vitest + build.
-- **Agents:** each of us pastes their `docs/agents/AGENT_Px_*.md` into their coding agent and tells it to read this README first. Agents must not change contracts on their own; they propose the change and stop.
-- **Decisions** go into `docs/decisions.md` in one line: date, decision, who.
+- **Branches:** `main` is always demo-able. Work on `p1/<topic>`, `p2/<topic>`… Small PRs or small direct pushes, pull before you push (`git pull --rebase origin main`).
+- **Don't edit another person's folder.** Ping them instead. Exception: P5 may fix imports and wiring.
+- **Contract changes** (anything in §5–§6): say it in the team chat first, update this README, the fixtures and the function in the same commit.
+- **Agents:** each of us gives their `agents/AGENT_Px_*.md` to their coding agent and tells it to read this README first. Agents must not change contracts on their own; they propose the change and stop.
+- **Large files stay out of git** (`data/`, kernels, `.TIF`). Use the fetch scripts.
 
 ---
 
-## 11. Milestones
+## 11. Milestones (Nov 14–15)
 
-| # | Milestone | Done when | Owner of the check |
+| # | Milestone | Done when | Owner |
 |---|---|---|---|
-| **M0** | Skeleton & contracts frozen v0.1 (prep, before kickoff) | Repo exists with the structure above; Pydantic schemas + fixtures merged; API serves fixtures; frontend shows L1 with fixture data; coord test vectors exist | P5 |
-| **M1** | Walking skeleton, all 4 layers on fixtures | A user can click through L1 → L4 and download a (rough) PDF, all on fixtures | P1 + P5 |
-| **M2** | Science on synthetic data | `synthetic` mode: real slope/zone/point generation (P2), real ephemeris + illumination with horizons (P3), real scoring + template explanations (P4) | P2, P3, P4 |
-| **M3** | Real data in | Challenge datasets preprocessed into our projection; precompute run; numbers sanity-checked against known sites | P2 + P3, P5 verifies |
-| **M4** | Polish | Camera transitions, charts, explanation texts (optional LLM), full PDF, deployed URL | P1, P4, P5 |
-| **M5** | Freeze & demo | Feature freeze ~3 h before submission; demo script rehearsed; README + methodology final; video/screenshots | everyone |
+| **M0** | Science ready | P3 scenario functions, 26-site catalog, real LOLA horizons, validation, fixtures ✔ | P3 ✔ |
+| **M1** | Walking skeleton on fixtures | All 5 screens click through on `mock_data/astro/` | P1 |
+| **M2** | Live API | `/api/sites` + 4 `/api/scenarios/*` routes call the P3 functions; verdicts attached | P5 + P4 |
+| **M3** | Frontend on live API | Cards built from any site/date, real horizon with Sun & Earth, slider animation | P1 + P5 |
+| **M4** | Polish | Verdict reasons, explainers, export, QuickMap/Moon Trek links, warnings visible | P1, P4 |
+| **M5** | Freeze & video | Feature freeze **Nov 15 ~18:00**; record the screens; cut the **90-second** video; submit before **23:59** | everyone, P5 leads |
 
-Suggested timing for the challenge days: **Day 1** morning M2 → afternoon M3 → evening start M4. **Day 2** M4 → freeze → M5.
+**90-second video outline (suggestion):** 0–10 s problem (power + comms decide a landing) · 10–30 s build
+two cards and open the site view (horizon, Sun, Earth, countdowns) · 30–50 s drag the timeline · 50–70 s compare
+4 sites with verdicts · 70–80 s date sweep, add a better date · 80–90 s validated against JPL Horizons and NASA LOLA maps.
 
 ---
 
-## 12. Open questions (resolve when the challenge statement / data is out)
+## 12. What changed from the pre-challenge plan
 
-1. Which datasets and resolutions are provided, and over what area? (drives DEM resolution and caching)
-2. Does the challenge specify landing criteria/thresholds (max slope, min illumination, comms)? If yes, they replace our defaults in `criteria.json`.
-3. Predefined regions: use the challenge's list if given, else our 6.
-4. Is boulder data available? If not, `boulder_density_per_km2 = null` and its weight is redistributed.
-5. Deployment target and demo format (live URL vs video).
+The pre-challenge plan (date → region → 3 zones → point → PDF report, plus an L1 Earth–Moon trajectory
+layer) is **dropped**. The official challenge is about sunlight and Earth visibility over time at a site,
+and comparing sites and dates, which the scenario flow above covers directly.
+
+- `astro/mission.py`, `plan_mission`, `calculate_mission` and the trajectory tests still exist but are **not used by the app**.
+- The `illumination_at`, `analyze_illumination`, `analyze_earth_visibility` wrappers remain available for P5's old adapters; new code should use the four scenario functions.
+- Regions, zones, candidate points, MCDA scoring and the PDF report are out of scope. P4's job is now the verdict rule and the explanations; P2's job is DEM access, coordinates and optional local terrain.
