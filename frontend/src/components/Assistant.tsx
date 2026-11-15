@@ -157,9 +157,9 @@ export function Assistant({ screen, onNavigate }: { screen: Screen; onNavigate: 
 
   return (
     <div className="assistant">
-      {open && (
-        <section
-          className="chat"
+      <section
+          className={`chat${open ? " is-open" : ""}`}
+          aria-hidden={!open}
           role="dialog"
           aria-label="LunaNav guide"
           onKeyDown={(e) => {
@@ -209,7 +209,6 @@ export function Assistant({ screen, onNavigate }: { screen: Screen; onNavigate: 
             </button>
           </form>
         </section>
-      )}
       <button className="chat-launch" onClick={() => store().setOpen(!open)} aria-expanded={open} aria-label={open ? "Close the guide" : "Open the guide"}>
         <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="currentColor" />
