@@ -1,0 +1,192 @@
+var e=`{
+ "status": "ok",
+ "result_type": "ephemeris_calculation",
+ "warnings": [],
+ "site": {
+  "id": "connecting-ridge",
+  "name": "Shackleton-de Gerlache connecting ridge",
+  "category": "south_pole_candidate",
+  "mission": null,
+  "agency": null,
+  "coord_quality": "approximate",
+  "lat_deg": -89.45,
+  "lon_deg": -137.3,
+  "elevation_m": 1954.44
+ },
+ "method": "horizon_mask",
+ "window": {
+  "start_utc": "2027-01-10T00:00:00Z",
+  "end_utc": "2027-02-08T12:44:03Z",
+  "duration_h": 708.734,
+  "duration_days": 29.5306,
+  "sampling_interval_h": 0.5,
+  "n_samples": 1419
+ },
+ "now": {
+  "t_utc": "2027-01-10T00:00:00Z",
+  "sun": {
+   "azimuth_deg": 290.779,
+   "elevation_deg": 1.063,
+   "horizon_elevation_deg": -2.633,
+   "margin_above_horizon_deg": 3.695,
+   "visible": true,
+   "disk_visible_fraction": 1.0,
+   "apparent_radius_deg": 0.2716,
+   "distance_km": 146742392.4
+  },
+  "earth": {
+   "azimuth_deg": 134.11,
+   "elevation_deg": -1.636,
+   "horizon_elevation_deg": -0.388,
+   "margin_above_horizon_deg": -1.248,
+   "visible": false,
+   "disk_visible_fraction": 0.0,
+   "apparent_radius_deg": 0.9027,
+   "distance_km": 404406.2
+  },
+  "power": {
+   "irradiance_w_m2": 1414.5,
+   "vertical_panel_factor": 0.9998,
+   "horizontal_panel_factor": 0.0185,
+   "vertical_panel_w_m2": 1414.2
+  },
+  "libration": {
+   "sub_earth_lat_deg": 1.007,
+   "sub_earth_lon_deg": -3.182
+  },
+  "sub_solar": {
+   "lat_deg": -0.868,
+   "lon_deg": 153.487
+  }
+ },
+ "countdown": {
+  "sun": {
+   "next_event": "sunset",
+   "next_event_utc": null,
+   "time_remaining_h": null,
+   "time_remaining_text": null,
+   "beyond_window": true,
+   "summary": "Sun stays up for the whole 29.5-day window"
+  },
+  "earth": {
+   "next_event": "earthrise",
+   "next_event_utc": "2027-01-10T21:36:48Z",
+   "time_remaining_h": 21.613,
+   "time_remaining_text": "21 h 37 min",
+   "beyond_window": false,
+   "summary": "Earthrise in 21 h 37 min"
+  }
+ },
+ "next_events": [
+  {
+   "event": "earthrise",
+   "t_utc": "2027-01-10T21:36:48Z",
+   "in_h": 21.613,
+   "in_text": "21 h 37 min"
+  },
+  {
+   "event": "earthset",
+   "t_utc": "2027-01-23T15:29:18Z",
+   "in_h": 327.488,
+   "in_text": "13 d 15 h 29 min"
+  },
+  {
+   "event": "earthrise",
+   "t_utc": "2027-02-07T02:23:12Z",
+   "in_h": 674.387,
+   "in_text": "28 d 2 h 23 min"
+  }
+ ],
+ "windows": {
+  "sunlit": [
+   {
+    "start_utc": "2027-01-10T00:00:00Z",
+    "end_utc": "2027-02-08T12:44:03Z",
+    "duration_h": 708.734,
+    "duration_text": "29 d 12 h 44 min",
+    "starts_in_h": 0.0,
+    "open_at_window_start": true,
+    "open_at_window_end": true
+   }
+  ],
+  "earth_visible": [
+   {
+    "start_utc": "2027-01-10T21:36:48Z",
+    "end_utc": "2027-01-23T15:29:18Z",
+    "duration_h": 305.875,
+    "duration_text": "12 d 17 h 52 min",
+    "starts_in_h": 21.613,
+    "open_at_window_start": false,
+    "open_at_window_end": false
+   },
+   {
+    "start_utc": "2027-02-07T02:23:12Z",
+    "end_utc": "2027-02-08T12:44:03Z",
+    "duration_h": 34.347,
+    "duration_text": "1 d 10 h 21 min",
+    "starts_in_h": 674.387,
+    "open_at_window_start": false,
+    "open_at_window_end": true
+   }
+  ],
+  "power_and_comms": [
+   {
+    "start_utc": "2027-01-10T21:36:48Z",
+    "end_utc": "2027-01-23T15:29:18Z",
+    "duration_h": 305.875,
+    "duration_text": "12 d 17 h 52 min",
+    "starts_in_h": 21.613,
+    "open_at_window_start": false,
+    "open_at_window_end": false
+   },
+   {
+    "start_utc": "2027-02-07T02:23:12Z",
+    "end_utc": "2027-02-08T12:44:03Z",
+    "duration_h": 34.347,
+    "duration_text": "1 d 10 h 21 min",
+    "starts_in_h": 674.387,
+    "open_at_window_start": false,
+    "open_at_window_end": true
+   }
+  ]
+ },
+ "metrics": {
+  "sunlight_pct": 100.0,
+  "sunlight_hours": 708.734,
+  "longest_darkness_h": 0.0,
+  "earth_visibility_pct": 48.0,
+  "earth_visible_hours": 340.222,
+  "longest_comms_gap_h": 346.898,
+  "power_and_comms_pct": 48.0,
+  "sun_elevation_deg_max": 1.063,
+  "sun_elevation_deg_min": 0.05,
+  "sun_elevation_deg_mean_when_lit": 0.45,
+  "earth_elevation_deg_max": 6.151,
+  "earth_elevation_deg_min": -7.543,
+  "mean_vertical_panel_factor": 1.0,
+  "mean_horizontal_panel_factor": 0.0078,
+  "vertical_panel_energy_kwh_m2": 995.503,
+  "n_sunsets": 0,
+  "n_earthsets": 1,
+  "libration_lat_range_deg": [
+   -6.775,
+   6.851
+  ],
+  "libration_lon_range_deg": [
+   -7.768,
+   7.412
+  ]
+ },
+ "data_sources": {
+  "ephemeris_backend": "analytic",
+  "ephemeris_source": "Analytic ephemeris: Meeus Astronomical Algorithms ch.25/47 (Sun/Moon), IAU WGCCRE 2009 lunar orientation (~ME frame)"
+ },
+ "limitations": [
+  "Sun/Earth positions from the ephemeris backend (analytic Meeus model or SPICE DE440)",
+  "sunlit / visible = disk centre above the horizon; disk_visible_fraction gives partial disks",
+  "horizon from the DEM (360 azimuth bins, rays to 100 km) only where a DEM covers the site",
+  "events shorter than one sampling interval can be missed",
+  "power factors are geometry only: no panel efficiency, temperature or dust",
+  "Geometric line of sight to the Earth's centre only. Actual radio communication also depends on antenna pointing and gain, link budget, ground-station coverage on Earth, relay satellites and the lander's own terrain mask; it is not modelled here."
+ ]
+}`;export{e as default};
