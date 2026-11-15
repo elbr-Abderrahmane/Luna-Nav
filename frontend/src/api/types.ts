@@ -29,7 +29,11 @@ export interface Site {
   coord_quality: "landed" | "approximate" | "exact" | "user_input";
   lat_deg: number;
   lon_deg: number;
-  elevation_m: number;
+  /** Missing in the sites.json catalog; present in the Site returned with conditions. */
+  elevation_m?: number;
+  /** Catalog only: reference | candidate | landed | planned ... (checked against mock_data/astro/sites.json) */
+  status?: string;
+  notes?: string | null;
 }
 
 export interface SitesResponse {
