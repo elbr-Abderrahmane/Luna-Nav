@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { USE_FIXTURES } from "../api/client";
 import { useScenarioStore } from "../state/scenarioStore";
+import { Assistant } from "./Assistant";
 import { ScenarioRail } from "./ScenarioRail";
 import { Starfield } from "./Starfield";
 
@@ -22,6 +23,8 @@ export function AppShell({ screen, onNavigate, children }: { screen: Screen; onN
     try { return localStorage.getItem(BANNER_KEY) === "1"; } catch { return false; }
   });
   const here = STEPS.findIndex((s) => s.id === screen);
+  const prev = here > 0 ? STEPS[here - 1] : null;
+  const next = here >= 0 && here < STEPS.length - 1 ? STEPS[here + 1] : null;
   const showRail = hasCards && (screen === "site" || screen === "timeline");
 
   return (
@@ -31,6 +34,14 @@ export function AppShell({ screen, onNavigate, children }: { screen: Screen; onN
         <div className="brand">
           <span className="brand-name">LunaNav</span>
           <span className="brand-tag">If we land here, on this date, will we have power and comms?</span>
+        </div>
+        <div className="pager" role="group" aria-label="Previous and next screen">
+          <button className="pager-btn" disabled={!prev} onClick={() => prev && onNavigate(prev.id)} aria-label={prev ? `Back to ${prev.label}` : "No previous screen"} title={prev ? `Back: ${prev.label}` : ""}>
+            ‹
+          </button>
+          <button className="pager-btn" disabled={!next} onClick={() => next && onNavigate(next.id)} aria-label={next ? `Next: ${next.label}` : "No next screen"} title={next ? `Next: ${next.label}` : ""}>
+            ›
+          </button>
         </div>
         <nav className="flow" aria-label="Screens">
           <ol>
@@ -65,6 +76,7 @@ export function AppShell({ screen, onNavigate, children }: { screen: Screen; onN
           </button>
         </div>
       )}
+      <Assistant screen={screen} onNavigate={onNavigate} />
       <div className={`workspace${showRail ? " with-rail" : ""}`}>
         {showRail && <ScenarioRail onNavigate={onNavigate} />}
         <main key={screen} className="page enter">

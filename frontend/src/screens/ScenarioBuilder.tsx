@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { addDemoScenarios } from "../lib/demo";
 import { Seg } from "../components/Seg";
 import { useSites } from "../api/queries";
 import type { SiteInput } from "../api/types";
@@ -12,7 +13,6 @@ import { utcFromParts } from "../lib/time";
 import { useScenarioStore } from "../state/scenarioStore";
 
 const DEFAULT_DATE = "2027-01-10"; // the date the saved example runs were made for
-const DEMO_SITES = ["connecting-ridge", "malapert-massif", "im-1", "apollo-11"]; // README 8
 
 export function ScenarioBuilder({ onNavigate }: { onNavigate: (s: Screen) => void }) {
   const cards = useScenarioStore((s) => s.cards);
@@ -44,8 +44,7 @@ export function ScenarioBuilder({ onNavigate }: { onNavigate: (s: Screen) => voi
   };
 
   const addDemo = () => {
-    const ids = DEMO_SITES.filter((id) => catalog?.some((s) => s.id === id));
-    for (const id of ids) addCard({ site: id, startUtc: utcFromParts(DEFAULT_DATE) });
+    addDemoScenarios(catalog, addCard);
   };
 
   return (

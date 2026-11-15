@@ -1,0 +1,65 @@
+/* lunanav-layout: back/forward arrows + every screen fits the window (desktop-size windows) */
+
+.pager { display: flex; gap: 8px; align-items: center; }
+.pager-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line-strong); background: transparent; cursor: pointer; font-size: 22px; line-height: 1; padding: 0 0 3px; transition: all 0.2s; }
+.pager-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: rgba(51, 240, 213, 0.08); }
+.pager-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.topbar { align-items: center; }
+.topbar .pager { margin-left: auto; }
+.topbar .flow { margin-left: 0; }
+
+.sky-wrap { position: relative; height: 300px; width: 100%; }
+.sky-wrap > .sky { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+.sky-foot { justify-content: space-between; flex-wrap: nowrap; gap: 14px; }
+.sky-foot .hint { flex: 1; min-width: 0; }
+.strip { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; padding: 10px 16px; }
+.strip .stack { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 20px; }
+.strip .hint { display: none; }
+.pop > summary { padding: 6px 2px; }
+.pop-body { position: absolute; right: 12px; bottom: calc(100% + 8px); width: min(460px, calc(100vw - 32px)); max-height: 50vh; overflow: auto; padding: 12px 16px; background: #0d1326; border: 1px solid var(--line-strong); border-radius: 8px; z-index: 6; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5); }
+.pop-body ul { margin: 0; }
+
+@media (min-width: 900px) and (min-height: 600px) {
+  html, body { height: 100%; overflow: hidden; }
+  .app { height: 100dvh; min-height: 0; overflow: hidden; }
+  .topbar { padding-top: 8px; padding-bottom: 8px; position: relative; flex: none; }
+  .fixture-banner { flex: none; padding-top: 5px; padding-bottom: 5px; }
+  .workspace { flex: 1 1 0; min-height: 0; }
+  .workspace > .page { height: 100%; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 12px; padding-top: 14px; padding-bottom: 14px; }
+  .rail { margin-top: 14px; max-height: calc(100% - 28px); overflow: auto; top: 0; position: relative; }
+
+  .page-head { flex: none; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 4px 18px; }
+  .page-head h1 { font-size: clamp(20px, 2.2vw, 26px); }
+  .page-head p { flex: 1 1 320px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .page > .banner { flex: none; max-height: 84px; overflow: auto; }
+
+  /* the main area of each screen takes the remaining height */
+  .page > .cols, .page > .cols-sky { flex: 1 1 0; min-height: 0; align-items: stretch; }
+  .cols > .panel, .cols-sky > .panel, .cols-sky > .stack { min-height: 0; overflow: auto; }
+  .cols > .panel > *, .cols > .panel > .stack > * { flex-shrink: 0; }
+  .cols-sky > .panel { display: flex; flex-direction: column; }
+  .cols-sky > .panel > .sky-wrap { flex: 1 1 0; min-height: 120px; height: auto; }
+  .cols-sky > .stack.side { gap: 10px; }
+  .cols-sky .tile { padding: 8px 12px; }
+  .cols-sky .tile-time { font-size: 20px; }
+  .cols-sky .panel > h2 { margin-bottom: 8px; }
+  .cols-sky .stats { gap: 8px; }
+  .page > .panel:has(.table-wrap) { flex: 1 1 0; min-height: 0; overflow: auto; }
+  .page > details.panel { flex: none; }
+  .page > .panel.empty { flex: none; }
+  .page > .panel:not(.strip):not(.empty):not(:has(.table-wrap)) { flex: none; }
+  .site-list { max-height: min(270px, 28vh); }
+  .sweep-sites { flex: none; }
+}
+
+@media (min-width: 900px) and (min-height: 600px) and (max-height: 800px) {
+  .brand-tag { display: none; }
+  .page-head p { display: none; }
+  .page { gap: 10px; }
+  /* Sun and Earth tiles side by side, power underneath */
+  .cols-sky > div.stack { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-content: start; }
+  .cols-sky > div.stack > .panel { grid-column: 1 / -1; }
+  .bars-labels, .bars-pct, .bars-tracks { gap: 6px; }
+  .bars-labels > div, .bars-pct > div, .bar { height: 18px; }
+  .page > .panel .hint { font-size: 12px; }
+}

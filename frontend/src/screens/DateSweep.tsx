@@ -64,7 +64,9 @@ export function DateSweep({ onNavigate }: { onNavigate: (s: Screen) => void }) {
   if (q.isError) return <>{switcher}<ErrorState error={q.error} onRetry={() => void q.refetch()} /></>;
   if (!q.data) return <>{switcher}<Loading label="Sweeping 12 lunar days..." /></>;
   const d = q.data;
-  const row = sel !== null ? d.rows[sel] : null;
+  const bestIdx = d.rows.findIndex((r) => r.label === d.best?.power_and_comms_pct?.label);
+  const shown = sel ?? (bestIdx >= 0 ? bestIdx : null);
+  const row = shown !== null ? d.rows[shown] : null;
   const bestPc = d.best?.power_and_comms_pct;
 
   return (
@@ -84,8 +86,11 @@ export function DateSweep({ onNavigate }: { onNavigate: (s: Screen) => void }) {
         <section className="panel stack">
           <h2>Landing date</h2>
           <Seg label="Metric" value={metric} onChange={setMetric} options={OPTIONS.map((o) => ({ value: o.key, label: o.label }))} />
-          <SweepChart rows={d.rows} metric={metric} selected={sel} onSelect={setSel} />
-          <p className="hint">Click a bar to select a date.</p>
+          <SweepChart rows={d.rows} metric={metric} selected={shown} onSelect={setSel} />
+          <div className="row sky-foot">
+            <p className="hint">Click a bar to select a date.</p>
+            <button className="btn small" onClick={() => downloadText(`lunanav-date-sweep-${d.site.id ?? "site"}.csv`, sweepCsv(d))}>Download CSV</button>
+          </div>
         </section>
         <section className="panel stack">
           <h2>{row ? row.label : "Selected date"}</h2>
