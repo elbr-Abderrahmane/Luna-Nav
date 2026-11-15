@@ -90,3 +90,36 @@ percent across a few hundred metres. A finer DEM (`--res 40` or `20`) should nar
 ## Decision engine (P4)
 
 _To be written by P4._
+
+
+## Verdict, ranking and explanations (P4)
+
+*Module: `backend/lunanav/decision/`. Pure functions: metrics in, decision out. No astronomy and no terrain access: P4 only interprets metrics computed by P3.*
+
+### Verdict rule
+
+Inputs (from `metrics`): `sunlight_pct`, `longest_darkness_h`, `earth_visibility_pct`, `longest_comms_gap_h`. Evaluation order: validate inputs, then `not_viable`, then `viable`, else `marginal`.
+
+| Level | Condition |
+|---|---|
+| not_viable | longest_darkness_h > 100, or sunlight_pct < 30, or earth_visibility_pct < 20 |
+| viable | sunlight_pct >= 60 and longest_darkness_h <= 50 and earth_visibility_pct >= 50 and longest_comms_gap_h <= 72 |
+| marginal | all other cases |
+
+Thresholds live in `DEFAULT_THRESHOLDS` and can be overridden; the thresholds actually used are returned with each verdict. They model a solar lander with ~4 days of battery and direct-to-Earth comms: **team assumptions, not NASA rules**. Missing, `None`, negative, non-finite or out-of-range inputs raise a controlled `DecisionInputError`; they are never read as favorable.
+
+### Optional multi-criteria ranking (`ranking.py`)
+
+Criteria: sunlight_pct (max), longest_darkness_h (min), earth_visibility_pct (max), longest_comms_gap_h (min), power_and_comms_pct (max), vertical_panel_energy_kwh_m2 (max).
+
+- **Normalization**: min-max to [0, 1] (0 = worst, 1 = best; "min" criteria are inverted). A criterion equal for all scenarios gets 1.0.
+- **WSM**: score = sum(weight x normalized value).
+- **TOPSIS**: vector normalization, weighting, distances to the ideal and anti-ideal solutions, closeness C = d- / (d+ + d-).
+- **Weight profiles** (assumptions): *science* favors productive time (sunlight, power + comms, energy); *engineering* favors worst cases (longest night, longest comms gap). Custom weights are accepted and normalized to sum 1.
+- **Sensitivity**: each weight x(1-25 %) and x(1+25 %), 200 random weightings (fixed seed), and science vs engineering. Stable = winner never changes and wins >= 80 % of random weightings; moderate >= 50 %; else sensitive.
+
+A ranking is relative: the top scenario can still be `not_viable`.
+
+### Limits
+
+Geometry only; no radio link budget, terrain hazards or thermal model. Min-max results depend on which scenarios are compared. Weights and thresholds are team choices and should be tuned with the team.
