@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { USE_FIXTURES } from "../api/client";
 import { useScenarioStore } from "../state/scenarioStore";
 import { Assistant } from "./Assistant";
+import { LunaLogo } from "./LunaLogo";
 import { ScenarioRail } from "./ScenarioRail";
 import { Starfield } from "./Starfield";
 
@@ -31,9 +32,12 @@ export function AppShell({ screen, onNavigate, children }: { screen: Screen; onN
     <div className="app">
       <Starfield />
       <header className="topbar">
-        <div className="brand">
-          <span className="brand-name">LunaNav</span>
-          <span className="brand-tag">If we land here, on this date, will we have power and comms?</span>
+        <div className="brand" style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "12px" }}>
+          <LunaLogo size={36} />
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <span className="brand-name">LunaNav</span>
+            <span className="brand-tag">If we land here, on this date, will we have power and comms?</span>
+          </div>
         </div>
         <div className="pager" role="group" aria-label="Previous and next screen">
           <button className="pager-btn" disabled={!prev} onClick={() => prev && onNavigate(prev.id)} aria-label={prev ? `Back to ${prev.label}` : "No previous screen"} title={prev ? `Back: ${prev.label}` : ""}>

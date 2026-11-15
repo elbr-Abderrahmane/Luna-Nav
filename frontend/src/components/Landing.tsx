@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "../landing.css";
+import { LunaLogo } from "./LunaLogo";
 import { Starfield } from "./Starfield";
 
 /** First screen: title and one button. Fades out, then hands over to the app. */
@@ -26,6 +27,7 @@ export function Landing({ onStart }: { onStart: () => void }) {
     <div className={`landing${leaving ? " landing-leaving" : ""}`}>
       <Starfield />
       <main className="landing-center">
+        <LunaLogo size={96} />
         <h1 className="landing-title">LUNANAV</h1>
         <button ref={button} className="landing-button" onClick={start}>
           Get started

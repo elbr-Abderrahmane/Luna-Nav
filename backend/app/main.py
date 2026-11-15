@@ -138,6 +138,10 @@ def create_app() -> FastAPI:
         def serve_spa_index():
             return FileResponse(str(frontend_dist / "index.html"))
 
+        @application.api_route("/favicon.svg", methods=["GET", "HEAD"], include_in_schema=False)
+        def serve_favicon():
+            return FileResponse(str(frontend_dist / "favicon.svg"), media_type="image/svg+xml")
+
     return application
 
 
