@@ -12,11 +12,11 @@ import { compareCsv, copyText, downloadText, summaryText } from "../lib/export";
 import { useScenarioStore } from "../state/scenarioStore";
 
 const DEFAULT_THRESHOLDS: Record<string, number> = {
-  viable_sunlight_pct_min: 60,
-  viable_longest_darkness_h_max: 50,
-  not_viable_longest_darkness_h_above: 100,
-  viable_earth_visibility_pct_min: 50,
-  viable_longest_comms_gap_h_max: 72,
+  sunlight_pct_min: 60,
+  longest_darkness_h_max: 50,
+  longest_darkness_h_not_viable: 100,
+  earth_visibility_pct_min: 50,
+  longest_comms_gap_h_max: 72,
 };
 
 export function Compare({ onNavigate }: { onNavigate: (s: Screen) => void }) {
@@ -57,7 +57,10 @@ export function Compare({ onNavigate }: { onNavigate: (s: Screen) => void }) {
     <>
       <div className="page-head">
         <h1>Compare {data.n_scenarios} scenarios</h1>
-        <p>Each column is one site on one landing date. "Best" marks the best value in each row.</p>
+        <p title={data.ranking_explanation}>
+          {data.ranking_explanation ??
+            'Each column is one site on one landing date. "Best" marks the best value in each row.'}
+        </p>
         <div className="row export-bar">
           <Seg
             label="Ranking profile"
@@ -131,8 +134,8 @@ export function Compare({ onNavigate }: { onNavigate: (s: Screen) => void }) {
                   type="number"
                   min={0}
                   max={100}
-                  value={draftThresholds.viable_sunlight_pct_min}
-                  onChange={(e) => updateDraft("viable_sunlight_pct_min", e.target.value)}
+                  value={draftThresholds.sunlight_pct_min}
+                  onChange={(e) => updateDraft("sunlight_pct_min", e.target.value)}
                 />
               </label>
               <label className="field">
@@ -141,8 +144,8 @@ export function Compare({ onNavigate }: { onNavigate: (s: Screen) => void }) {
                   type="number"
                   min={0}
                   max={708}
-                  value={draftThresholds.viable_longest_darkness_h_max}
-                  onChange={(e) => updateDraft("viable_longest_darkness_h_max", e.target.value)}
+                  value={draftThresholds.longest_darkness_h_max}
+                  onChange={(e) => updateDraft("longest_darkness_h_max", e.target.value)}
                 />
               </label>
               <label className="field">
@@ -151,8 +154,8 @@ export function Compare({ onNavigate }: { onNavigate: (s: Screen) => void }) {
                   type="number"
                   min={0}
                   max={708}
-                  value={draftThresholds.not_viable_longest_darkness_h_above}
-                  onChange={(e) => updateDraft("not_viable_longest_darkness_h_above", e.target.value)}
+                  value={draftThresholds.longest_darkness_h_not_viable}
+                  onChange={(e) => updateDraft("longest_darkness_h_not_viable", e.target.value)}
                 />
               </label>
               <label className="field">
@@ -161,8 +164,8 @@ export function Compare({ onNavigate }: { onNavigate: (s: Screen) => void }) {
                   type="number"
                   min={0}
                   max={100}
-                  value={draftThresholds.viable_earth_visibility_pct_min}
-                  onChange={(e) => updateDraft("viable_earth_visibility_pct_min", e.target.value)}
+                  value={draftThresholds.earth_visibility_pct_min}
+                  onChange={(e) => updateDraft("earth_visibility_pct_min", e.target.value)}
                 />
               </label>
               <label className="field">
@@ -171,8 +174,8 @@ export function Compare({ onNavigate }: { onNavigate: (s: Screen) => void }) {
                   type="number"
                   min={0}
                   max={708}
-                  value={draftThresholds.viable_longest_comms_gap_h_max}
-                  onChange={(e) => updateDraft("viable_longest_comms_gap_h_max", e.target.value)}
+                  value={draftThresholds.longest_comms_gap_h_max}
+                  onChange={(e) => updateDraft("longest_comms_gap_h_max", e.target.value)}
                 />
               </label>
             </div>
