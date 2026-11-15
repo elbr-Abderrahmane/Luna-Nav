@@ -139,8 +139,17 @@ def create_app() -> FastAPI:
             return FileResponse(str(frontend_dist / "index.html"))
 
         @application.api_route("/favicon.svg", methods=["GET", "HEAD"], include_in_schema=False)
-        def serve_favicon():
+        @application.api_route("/lunanav-icon.svg", methods=["GET", "HEAD"], include_in_schema=False)
+        def serve_favicon_svg():
             return FileResponse(str(frontend_dist / "favicon.svg"), media_type="image/svg+xml")
+
+        @application.api_route("/favicon.png", methods=["GET", "HEAD"], include_in_schema=False)
+        def serve_favicon_png():
+            return FileResponse(str(frontend_dist / "favicon.png"), media_type="image/png")
+
+        @application.api_route("/favicon.ico", methods=["GET", "HEAD"], include_in_schema=False)
+        def serve_favicon_ico():
+            return FileResponse(str(frontend_dist / "favicon.ico"), media_type="image/x-icon")
 
     return application
 
