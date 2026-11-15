@@ -134,7 +134,7 @@ def create_app() -> FastAPI:
         if assets_dir.is_dir():
             application.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
 
-        @application.get("/", include_in_schema=False)
+        @application.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
         def serve_spa_index():
             return FileResponse(str(frontend_dist / "index.html"))
 
