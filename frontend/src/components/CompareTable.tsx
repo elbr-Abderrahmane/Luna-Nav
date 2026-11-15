@@ -1,4 +1,4 @@
-import type { Compare } from "../api/types";
+import type { Compare, CompareRow } from "../api/types";
 import { formatValue } from "../lib/format";
 import { METRICS } from "../lib/metrics";
 import { VerdictBadge } from "./VerdictBadge";
@@ -8,6 +8,61 @@ interface Props {
   onOpen: (index: number) => void;
   onSweep: (index: number) => void;
   canSweep: (index: number) => boolean;
+}
+
+function renderThresholdChecks(row: CompareRow) {
+  const t = row.verdict?.thresholds;
+  if (!t) return null;
+  const m = row.metrics;
+
+  const sunMin = t.sunlight_pct_min ?? t.viable_sunlight_pct_min ?? 60;
+  const sunHard = t.sunlight_pct_not_viable ?? t.not_viable_sunlight_pct_below ?? 30;
+  const darkMax = t.longest_darkness_h_max ?? t.viable_longest_darkness_h_max ?? 50;
+  const darkHard = t.longest_darkness_h_not_viable ?? t.not_viable_longest_darkness_h_above ?? 100;
+  const earthMin = t.earth_visibility_pct_min ?? t.viable_earth_visibility_pct_min ?? 50;
+  const earthHard = t.earth_visibility_pct_not_viable ?? t.not_viable_earth_visibility_pct_below ?? 20;
+  const commsMax = t.longest_comms_gap_h_max ?? t.viable_longest_comms_gap_h_max ?? 72;
+
+  const sunOk = m.sunlight_pct >= sunMin;
+  const sunFatal = m.sunlight_pct < sunHard;
+
+  const darkOk = m.longest_darkness_h <= darkMax;
+  const darkFatal = m.longest_darkness_h > darkHard;
+
+  const earthOk = m.earth_visibility_pct >= earthMin;
+  const earthFatal = m.earth_visibility_pct < earthHard;
+
+  const commsOk = m.longest_comms_gap_h <= commsMax;
+
+  const passedCount = [sunOk, darkOk, earthOk, commsOk].filter(Boolean).length;
+
+  const itemStyle = (ok: boolean, fatal = false): React.CSSProperties => ({
+    color: ok ? "var(--ok)" : fatal ? "var(--bad)" : "var(--warn)",
+    fontSize: "12px",
+    lineHeight: 1.4,
+  });
+
+  return (
+    <div style={{ marginTop: 8, paddingTop: 6, borderTop: "1px dashed var(--line)" }}>
+      <div className="mono muted small" style={{ marginBottom: 4 }}>
+        Hardware checks: <strong>{passedCount}/4 targets met</strong>
+      </div>
+      <ul className="reasons" style={{ margin: 0, listStyle: "none", paddingLeft: 0 }}>
+        <li style={itemStyle(sunOk, sunFatal)}>
+          {sunOk ? "✓" : sunFatal ? "✗" : "⚠"} Sunlight {Math.round(m.sunlight_pct)}% (target &ge; {sunMin}%)
+        </li>
+        <li style={itemStyle(darkOk, darkFatal)}>
+          {darkOk ? "✓" : darkFatal ? "✗" : "⚠"} Night {Math.round(m.longest_darkness_h)}h (target &le; {darkMax}h, max {darkHard}h)
+        </li>
+        <li style={itemStyle(earthOk, earthFatal)}>
+          {earthOk ? "✓" : earthFatal ? "✗" : "⚠"} Earth vis {Math.round(m.earth_visibility_pct)}% (target &ge; {earthMin}%)
+        </li>
+        <li style={itemStyle(commsOk, false)}>
+          {commsOk ? "✓" : "⚠"} Comms gap {Math.round(m.longest_comms_gap_h)}h (limit &le; {commsMax}h)
+        </li>
+      </ul>
+    </div>
+  );
 }
 
 export function CompareTable({ data, onOpen, onSweep, canSweep }: Props) {
@@ -95,13 +150,7 @@ export function CompareTable({ data, onOpen, onSweep, canSweep }: Props) {
               <td key={i}>
                 <VerdictBadge verdict={r.verdict} />
                 {r.verdict && <p className="hint">{r.verdict.summary}</p>}
-                {r.verdict && r.verdict.reasons.length > 0 && (
-                  <ul className="reasons">
-                    {r.verdict.reasons.map((x, j) => (
-                      <li key={j}>{x}</li>
-                    ))}
-                  </ul>
-                )}
+                {renderThresholdChecks(r)}
               </td>
             ))}
           </tr>

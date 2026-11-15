@@ -19,6 +19,56 @@ const DEFAULT_THRESHOLDS: Record<string, number> = {
   longest_comms_gap_h_max: 72,
 };
 
+const HARDWARE_PRESETS: {
+  id: string;
+  label: string;
+  desc: string;
+  thresholds: Record<string, number> | undefined;
+}[] = [
+  {
+    id: "default",
+    label: "Solar + Direct Radio (Default)",
+    desc: "4-day battery (50h target / 100h survival), direct-to-Earth comms (≥50% Earth vis, ≤72h gap).",
+    thresholds: undefined,
+  },
+  {
+    id: "relay",
+    label: "+ Lunar Relay Satellite",
+    desc: "Orbiter relay removes direct-Earth comms bottleneck (0% direct Earth required, 708h gap allowed).",
+    thresholds: {
+      sunlight_pct_min: 60,
+      longest_darkness_h_max: 50,
+      longest_darkness_h_not_viable: 100,
+      earth_visibility_pct_min: 0,
+      longest_comms_gap_h_max: 708,
+    },
+  },
+  {
+    id: "rtg",
+    label: "+ RTG / 14-Day Night Battery",
+    desc: "Radioisotope heater/power survives 250h–350h lunar nights with direct-to-Earth radio.",
+    thresholds: {
+      sunlight_pct_min: 45,
+      longest_darkness_h_max: 250,
+      longest_darkness_h_not_viable: 350,
+      earth_visibility_pct_min: 50,
+      longest_comms_gap_h_max: 72,
+    },
+  },
+  {
+    id: "all-weather",
+    label: "Nuclear + Relay (All-Weather)",
+    desc: "Both RTG night survival (≤300h) and lunar relay satellite comms.",
+    thresholds: {
+      sunlight_pct_min: 40,
+      longest_darkness_h_max: 300,
+      longest_darkness_h_not_viable: 350,
+      earth_visibility_pct_min: 0,
+      longest_comms_gap_h_max: 708,
+    },
+  },
+];
+
 function sanitizeThresholds(raw: Record<string, number>): Record<string, number> {
   const sunlightMin = Math.min(100, Math.max(0, Number(raw.sunlight_pct_min ?? 60)));
   const darknessMax = Math.max(0, Number(raw.longest_darkness_h_max ?? 50));
@@ -42,6 +92,7 @@ export function Compare({ onNavigate }: { onNavigate: (s: Screen) => void }) {
   const setSweepSite = useScenarioStore((s) => s.setSweepSiteId);
 
   const [profile, setProfile] = useState<RankingProfile>("engineering");
+  const [activePreset, setActivePreset] = useState<string>("default");
   const [draftThresholds, setDraftThresholds] = useState<Record<string, number>>(DEFAULT_THRESHOLDS);
   const [appliedThresholds, setAppliedThresholds] = useState<Record<string, number> | undefined>(undefined);
   const [note, setNote] = useState<string | null>(null);
@@ -65,6 +116,7 @@ export function Compare({ onNavigate }: { onNavigate: (s: Screen) => void }) {
         error={q.error}
         onRetry={() => {
           if (appliedThresholds) {
+            setActivePreset("default");
             setDraftThresholds(DEFAULT_THRESHOLDS);
             setAppliedThresholds(undefined);
           } else {
@@ -81,6 +133,21 @@ export function Compare({ onNavigate }: { onNavigate: (s: Screen) => void }) {
     const num = Number(val);
     if (!Number.isNaN(num)) {
       setDraftThresholds((prev) => ({ ...prev, [key]: num }));
+    }
+  };
+
+  const applyPreset = (presetId: string) => {
+    const p = HARDWARE_PRESETS.find((x) => x.id === presetId);
+    if (!p) return;
+    setActivePreset(p.id);
+    if (!p.thresholds) {
+      setDraftThresholds(DEFAULT_THRESHOLDS);
+      setAppliedThresholds(undefined);
+      setNote(`Hardware preset: ${p.label}`);
+    } else {
+      setDraftThresholds(p.thresholds);
+      setAppliedThresholds(sanitizeThresholds(p.thresholds));
+      setNote(`Hardware preset: ${p.label}`);
     }
   };
 
@@ -146,31 +213,33 @@ export function Compare({ onNavigate }: { onNavigate: (s: Screen) => void }) {
           }}
         />
       </section>
-      <section className="panel strip" aria-label="Thresholds and limits">
-        <div className="row" style={{ gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-          <span className="muted small">
-            Verdict rules:{" "}
-            <strong>{appliedThresholds ? "Custom Spacecraft Thresholds" : "NASA Default Thresholds"}</strong>
-          </span>
-          {appliedThresholds && (
+      <section className="panel strip" aria-label="Spacecraft hardware thresholds and limits">
+        <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <span className="muted small">Spacecraft hardware:</span>
+          {HARDWARE_PRESETS.map((p) => (
             <button
-              className="btn small"
-              onClick={() => {
-                setDraftThresholds(DEFAULT_THRESHOLDS);
-                setAppliedThresholds(undefined);
-              }}
+              key={p.id}
+              className="chip"
+              aria-pressed={activePreset === p.id}
+              title={p.desc}
+              onClick={() => applyPreset(p.id)}
             >
-              Reset to NASA Defaults
+              {p.label}
             </button>
-          )}
+          ))}
         </div>
         <div className="row" style={{ gap: "1.25rem", flexWrap: "wrap" }}>
           <details className="pop">
             <summary>
-              Customize Spacecraft Hardware Thresholds {appliedThresholds ? "(Custom Active)" : "(NASA Default)"}
+              Customize Spacecraft Hardware Thresholds{" "}
+              {appliedThresholds ? `(${activePreset === "custom" ? "Custom" : activePreset} active)` : "(NASA Default)"}
             </summary>
             <div className="pop-body">
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <p style={{ margin: 0, fontSize: 12, color: "var(--mute)" }}>
+                  Set your lander&apos;s battery and radio limits to re-evaluate each site&apos;s{" "}
+                  <strong>Verdict (Viable / Marginal / Not viable)</strong> and <strong>Hardware Checks (X/4)</strong>:
+                </p>
                 <div
                   style={{
                     display: "grid",
@@ -234,6 +303,7 @@ export function Compare({ onNavigate }: { onNavigate: (s: Screen) => void }) {
                     className="btn primary small"
                     onClick={() => {
                       const clean = sanitizeThresholds(draftThresholds);
+                      setActivePreset("custom");
                       setDraftThresholds({
                         sunlight_pct_min: clean.sunlight_pct_min,
                         longest_darkness_h_max: clean.longest_darkness_h_max,
@@ -242,18 +312,13 @@ export function Compare({ onNavigate }: { onNavigate: (s: Screen) => void }) {
                         longest_comms_gap_h_max: clean.longest_comms_gap_h_max,
                       });
                       setAppliedThresholds(clean);
+                      setNote("Applied custom spacecraft thresholds");
                     }}
                   >
                     Apply Thresholds
                   </button>
                   {appliedThresholds && (
-                    <button
-                      className="btn small"
-                      onClick={() => {
-                        setDraftThresholds(DEFAULT_THRESHOLDS);
-                        setAppliedThresholds(undefined);
-                      }}
-                    >
+                    <button className="btn small" onClick={() => applyPreset("default")}>
                       Reset to NASA Defaults
                     </button>
                   )}
