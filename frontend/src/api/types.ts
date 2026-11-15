@@ -112,11 +112,36 @@ export interface TerrainInfo {
     nominal_coverage: boolean;
     raster_coverage: boolean;
     pixel_covered: boolean;
-    elevation_m: number | null;
+    elevation_m?: number | null;
   };
   slope_deg?: number | null;
   slope_status?: string;
   roughness_m?: number | null;
+  summary?: {
+    status: string;
+    valid_pixel_count: number;
+    min_elevation_m: number | null;
+    max_elevation_m: number | null;
+    mean_elevation_m: number | null;
+    roughness_m: number | null;
+  };
+}
+
+export interface TerrainHeightmap {
+  status: string;
+  lat_deg: number;
+  lon_deg: number;
+  center_x_m: number;
+  center_y_m: number;
+  radius_m: number;
+  width_px: number;
+  height_px: number;
+  resolution_m: [number, number] | null;
+  min_elevation_m: number | null;
+  max_elevation_m: number | null;
+  valid_pixel_count?: number;
+  nodata_pixel_count?: number;
+  elevations_m: (number | null)[][];
 }
 
 export interface SiteConditions extends Envelope {
@@ -270,9 +295,13 @@ export interface DateSweep extends Envelope {
 }
 
 // ---- request bodies ----
-export interface ConditionsRequest { site: SiteInput; start_utc: UTC; window_days?: number }
-export interface TimelineRequest { site: SiteInput; start_utc: UTC; days?: number; step_h?: number }
+export type RankingProfile = "engineering" | "science";
+
+export interface ConditionsRequest { site: SiteInput; start_utc: UTC; window_days?: number; thresholds?: Record<string, number> }
+export interface TimelineRequest { site: SiteInput; start_utc: UTC; days?: number; step_h?: number; thresholds?: Record<string, number> }
 export interface CompareRequest {
   scenarios: { site: SiteInput; start_utc: UTC; label?: string; window_days?: number }[];
+  profile?: RankingProfile;
+  thresholds?: Record<string, number>;
 }
-export interface DateSweepRequest { site: SiteInput; first_start_utc: UTC; n?: number; every_days?: number }
+export interface DateSweepRequest { site: SiteInput; first_start_utc: UTC; n?: number; every_days?: number; thresholds?: Record<string, number> }

@@ -17,7 +17,9 @@ passed as `dem=` (tests use a mock DEM).
 from __future__ import annotations
 
 import hashlib
+import json
 import os
+from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
@@ -27,6 +29,25 @@ from .ephemeris import REPO_ROOT
 from .topo import enu_basis
 
 R = float(MOON_RADIUS_M)
+PRECOMPUTED_FILE = Path(__file__).with_name("precomputed_horizons.json")
+
+
+@lru_cache(maxsize=1)
+def _precomputed_horizons() -> dict:
+    if not PRECOMPUTED_FILE.is_file():
+        return {}
+    try:
+        return json.loads(PRECOMPUTED_FILE.read_text(encoding="utf-8")).get("sites", {})
+    except Exception:
+        return {}
+
+
+def lookup_precomputed_horizon(lat_deg: float, lon_deg: float) -> np.ndarray | None:
+    """Return precomputed 360-azimuth horizon mask (deg) if (lat_deg, lon_deg) matches a catalog polar site."""
+    for entry in _precomputed_horizons().values():
+        if abs(entry["lat_deg"] - lat_deg) <= 1e-4 and abs(entry["lon_deg"] - lon_deg) <= 1e-4:
+            return np.asarray(entry["horizon_deg"], dtype=np.float32)
+    return None
 
 
 def default_dem():
@@ -137,6 +158,15 @@ def horizon_mask(lat_deg: float, lon_deg: float, n_az: int = 360, max_dist_km: f
     path = cache_dir() / (hashlib.sha1(key.encode()).hexdigest()[:20] + ".npy")
     if use_cache and path.exists():
         return np.load(path)
+    if (
+        n_az == 360
+        and abs(max_dist_km - 100.0) < 1e-6
+        and abs(observer_height_m - 2.0) < 1e-6
+        and _dem_id(dem).startswith("lola:")
+    ):
+        pre = lookup_precomputed_horizon(lat_deg, lon_deg)
+        if pre is not None:
+            return pre.copy()
     mask = compute_horizon_mask(lat_deg, lon_deg, dem, n_az, max_dist_km, observer_height_m)
     if use_cache:
         path.parent.mkdir(parents=True, exist_ok=True)

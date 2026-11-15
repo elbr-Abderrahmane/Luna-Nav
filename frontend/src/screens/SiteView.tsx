@@ -6,6 +6,7 @@ import { ExternalLinks } from "../components/ExternalLinks";
 import { HorizonView } from "../components/HorizonView";
 import { Loading } from "../components/Loading";
 import { PowerReadout } from "../components/PowerReadout";
+import { TerrainCard } from "../components/TerrainCard";
 import { VerdictBadge } from "../components/VerdictBadge";
 import { WarningList } from "../components/WarningList";
 import { siteLabel } from "../lib/site";
@@ -75,22 +76,25 @@ export function SiteView({ onNavigate }: { onNavigate: (s: Screen) => void }) {
         </div>
       </div>
       <div className="cols">
-        <section className="panel">
-          <h2>See the real site</h2>
-          <ExternalLinks site={data.site} />
-        </section>
-        <section className="panel">
-          <h2>Method and limits</h2>
-          <details>
-            <summary>How these numbers are made</summary>
-            <ul>
-              <li>Ephemeris: {data.data_sources.ephemeris_source}</li>
-              {data.limitations.map((l, i) => (
-                <li key={i}>{l}</li>
-              ))}
-            </ul>
-          </details>
-        </section>
+        <TerrainCard site={data.site} terrain={data.terrain} />
+        <div className="stack">
+          <section className="panel">
+            <h2>See the real site</h2>
+            <ExternalLinks site={data.site} />
+          </section>
+          <section className="panel">
+            <h2>Method and limits</h2>
+            <details>
+              <summary>How these numbers are made</summary>
+              <ul>
+                <li>Ephemeris: {data.data_sources.ephemeris_source}</li>
+                {data.limitations.map((l, i) => (
+                  <li key={i}>{l}</li>
+                ))}
+              </ul>
+            </details>
+          </section>
+        </div>
       </div>
     </>
   );

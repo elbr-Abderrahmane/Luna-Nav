@@ -94,5 +94,23 @@ export async function resolveFixture<T>(files: FixtureFiles, method: "GET" | "PO
   if (method === "POST" && clean === "/scenarios/date-sweep") {
     return addPlaceholderVerdicts(await loadForSite<WithRows>(files, "date_sweep", body)) as T;
   }
+  if (method === "GET" && clean === "/terrain/heightmap") {
+    const lat = Number(params?.lat_deg ?? -89.45);
+    const lon = Number(params?.lon_deg ?? -137.3);
+    return {
+      status: lat <= -80 ? "dem_unavailable" : "outside_nominal_coverage",
+      lat_deg: lat,
+      lon_deg: lon,
+      center_x_m: 0,
+      center_y_m: 0,
+      radius_m: Number(params?.radius_m ?? 1600),
+      width_px: 0,
+      height_px: 0,
+      resolution_m: null,
+      min_elevation_m: null,
+      max_elevation_m: null,
+      elevations_m: [],
+    } as T;
+  }
   throw new FixtureMissingError(`No fixture mapping for ${method} ${clean}`);
 }

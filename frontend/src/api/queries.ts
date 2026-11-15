@@ -4,7 +4,8 @@ import type { ScenarioCard } from "../state/scenarioStore";
 import { apiGet, apiPost } from "./client";
 import type {
   Compare, CompareRequest, ConditionsRequest, DateSweep, DateSweepRequest,
-  SiteConditions, SiteInput, SiteTimeline, SitesResponse, TimelineRequest,
+  RankingProfile, SiteConditions, SiteInput, SiteTimeline, SitesResponse,
+  TerrainHeightmap, TimelineRequest,
 } from "./types";
 
 /** Stable cache key for a site: catalog id, or rounded coordinates for a typed one. */
@@ -36,16 +37,35 @@ export const useTimeline = (card: ScenarioCard | null) =>
     },
   });
 
-export const useCompare = (cards: ScenarioCard[]) =>
+export const useCompare = (
+  cards: ScenarioCard[],
+  profile: RankingProfile = "engineering",
+  thresholds?: Record<string, number>,
+) =>
   useQuery({
-    queryKey: ["compare", ...cards.map((c) => cardKey(c).join("|") + "|" + (c.label ?? ""))],
+    queryKey: [
+      "compare",
+      ...cards.map((c) => cardKey(c).join("|") + "|" + (c.label ?? "")),
+      profile,
+      thresholds ? JSON.stringify(thresholds) : null,
+    ],
     enabled: cards.length >= MIN_CARDS,
     queryFn: () => {
       const body: CompareRequest = {
         scenarios: cards.map((c) => ({ site: c.site, start_utc: c.startUtc, label: c.label, window_days: c.windowDays })),
+        profile,
+        ...(thresholds ? { thresholds } : {}),
       };
       return apiPost<Compare>("/scenarios/compare", body);
     },
+  });
+
+export const useTerrainHeightmap = (latDeg: number | null | undefined, lonDeg: number | null | undefined, radiusM = 1600) =>
+  useQuery({
+    queryKey: ["terrain-heightmap", latDeg !== undefined && latDeg !== null ? latDeg.toFixed(4) : null, lonDeg !== undefined && lonDeg !== null ? lonDeg.toFixed(4) : null, radiusM],
+    enabled: typeof latDeg === "number" && typeof lonDeg === "number" && latDeg <= -80,
+    staleTime: Infinity,
+    queryFn: () => apiGet<TerrainHeightmap>("/terrain/heightmap", { lat_deg: latDeg!, lon_deg: lonDeg!, radius_m: radiusM }),
   });
 
 export const useDateSweep = (site: SiteInput | null, firstStartUtc: string | null, n = SWEEP_N) =>
