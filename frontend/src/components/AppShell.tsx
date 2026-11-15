@@ -1,5 +1,7 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { USE_FIXTURES } from "../api/client";
+import { useScenarioStore } from "../state/scenarioStore";
+import { ScenarioRail } from "./ScenarioRail";
 import { Starfield } from "./Starfield";
 
 export type Screen = "builder" | "site" | "timeline" | "compare" | "sweep";
@@ -12,7 +14,16 @@ const STEPS: { id: Screen; label: string }[] = [
   { id: "sweep", label: "Date sweep" },
 ];
 
+const BANNER_KEY = "lunanav.hideFixtureBanner";
+
 export function AppShell({ screen, onNavigate, children }: { screen: Screen; onNavigate: (s: Screen) => void; children: ReactNode }) {
+  const hasCards = useScenarioStore((s) => s.cards.length > 0);
+  const [hideBanner, setHideBanner] = useState(() => {
+    try { return localStorage.getItem(BANNER_KEY) === "1"; } catch { return false; }
+  });
+  const here = STEPS.findIndex((s) => s.id === screen);
+  const showRail = hasCards && (screen === "site" || screen === "timeline");
+
   return (
     <div className="app">
       <Starfield />
@@ -21,21 +32,45 @@ export function AppShell({ screen, onNavigate, children }: { screen: Screen; onN
           <span className="brand-name">LunaNav</span>
           <span className="brand-tag">If we land here, on this date, will we have power and comms?</span>
         </div>
-        <nav className="steps" aria-label="Screens">
-          {STEPS.map((s, i) => (
-            <button key={s.id} className="step" aria-current={screen === s.id ? "page" : undefined} onClick={() => onNavigate(s.id)}>
-              <span className="step-n">{i + 1}</span>
-              {s.label}
-            </button>
-          ))}
+        <nav className="flow" aria-label="Screens">
+          <ol>
+            {STEPS.map((s, i) => (
+              <li key={s.id} className="flow-item" data-state={i < here ? "done" : i === here ? "current" : "todo"}>
+                {i > 0 && <span className="flow-link" aria-hidden="true" />}
+                <button className="flow-node" aria-current={i === here ? "page" : undefined} onClick={() => onNavigate(s.id)}>
+                  <span className="orb" aria-hidden="true" />
+                  <span className="flow-label">{s.label}</span>
+                </button>
+              </li>
+            ))}
+          </ol>
+          <button className="flow-loop" onClick={() => onNavigate("builder")} title="Start another scenario">
+            <span aria-hidden="true">↺</span> New scenario
+          </button>
         </nav>
       </header>
-      {USE_FIXTURES && (
+      {USE_FIXTURES && !hideBanner && (
         <div className="fixture-banner" role="status">
-          Fixture mode: these are saved example runs. The date you pick does not change the numbers, and only a few sites have data. Set VITE_USE_FIXTURES=false to use the live API.
+          <span>
+            Fixture mode: these are saved example runs. The date you pick does not change the numbers, and only a few sites have data.
+          </span>
+          <button
+            className="btn small"
+            onClick={() => {
+              setHideBanner(true);
+              try { localStorage.setItem(BANNER_KEY, "1"); } catch { /* storage can be blocked */ }
+            }}
+          >
+            Hide
+          </button>
         </div>
       )}
-      <main className="page">{children}</main>
+      <div className={`workspace${showRail ? " with-rail" : ""}`}>
+        {showRail && <ScenarioRail onNavigate={onNavigate} />}
+        <main key={screen} className="page enter">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

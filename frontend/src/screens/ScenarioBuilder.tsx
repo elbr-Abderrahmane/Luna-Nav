@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Seg } from "../components/Seg";
 import { useSites } from "../api/queries";
 import type { SiteInput } from "../api/types";
 import { LatLonInput, type LatLonValue } from "../components/LatLonInput";
@@ -56,14 +57,7 @@ export function ScenarioBuilder({ onNavigate }: { onNavigate: (s: Screen) => voi
       <div className="cols">
         <section className="panel stack" aria-labelledby="add-h">
           <h2 id="add-h">Add a scenario</h2>
-          <div className="seg" role="group" aria-label="Site source">
-            <button aria-pressed={mode === "catalog"} onClick={() => setMode("catalog")}>
-              Site catalog
-            </button>
-            <button aria-pressed={mode === "custom"} onClick={() => setMode("custom")}>
-              Type coordinates
-            </button>
-          </div>
+          <Seg label="Site source" value={mode} onChange={setMode} options={[{ value: "catalog", label: "Site catalog" }, { value: "custom", label: "Type coordinates" }]} />
           {mode === "catalog" ? <SitePicker value={siteId} onChange={setSiteId} /> : <LatLonInput value={custom} onChange={setCustom} />}
           <div className="cols" style={{ gap: 12 }}>
             <label className="field">

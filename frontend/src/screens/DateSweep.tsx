@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Seg } from "../components/Seg";
 import { useDateSweep, useSites } from "../api/queries";
 import type { Screen } from "../components/AppShell";
 import { ErrorState } from "../components/ErrorState";
@@ -8,6 +9,7 @@ import { VerdictBadge } from "../components/VerdictBadge";
 import { WarningList } from "../components/WarningList";
 import { MAX_CARDS } from "../lib/constants";
 import { formatValue } from "../lib/format";
+import { siteLabel } from "../lib/site";
 import { useScenarioStore } from "../state/scenarioStore";
 
 const OPTIONS: { key: SweepKey; label: string }[] = [
@@ -18,7 +20,8 @@ const OPTIONS: { key: SweepKey; label: string }[] = [
 
 export function DateSweep({ onNavigate }: { onNavigate: (s: Screen) => void }) {
   const cards = useScenarioStore((s) => s.cards);
-  const sweepSite = useScenarioStore((s) => s.sweepSiteId);
+  const storedSweepSite = useScenarioStore((s) => s.sweepSiteId);
+  const sweepSite = storedSweepSite && cards.some((c) => c.site === storedSweepSite) ? storedSweepSite : null;
   const setSweepSite = useScenarioStore((s) => s.setSweepSiteId);
   const addCard = useScenarioStore((s) => s.addCard);
   const catalog = useSites().data?.sites;
@@ -26,6 +29,18 @@ export function DateSweep({ onNavigate }: { onNavigate: (s: Screen) => void }) {
   const [sel, setSel] = useState<number | null>(null);
   const [note, setNote] = useState<string | null>(null);
 
+  const siteCards = cards.filter((c, i) => typeof c.site === "string" && cards.findIndex((x) => x.site === c.site) === i);
+  const switcher = (
+    <div className="sweep-sites sweep-sites-bar" role="group" aria-label="Site to sweep">
+      <span className="muted">Site</span>
+      {siteCards.map((c) => (
+        <button key={c.id} className="chip" aria-pressed={c.site === sweepSite} onClick={() => { setSweepSite(c.site as string); setSel(null); }}>
+          {siteLabel(c.site, catalog)}
+        </button>
+      ))}
+      {cards.some((c) => typeof c.site !== "string") && <span className="hint">Scenarios with typed coordinates cannot be swept.</span>}
+    </div>
+  );
   const first = cards.find((c) => c.site === sweepSite)?.startUtc ?? cards[0]?.startUtc ?? "2027-01-10T00:00:00Z";
   const q = useDateSweep(sweepSite, first);
 
@@ -34,7 +49,7 @@ export function DateSweep({ onNavigate }: { onNavigate: (s: Screen) => void }) {
     return (
       <section className="panel empty">
         <h1>Date sweep</h1>
-        <p className="muted">Pick a site to see how 12 consecutive lunar days compare.</p>
+        <p className="muted">{options.length > 0 ? "Pick a site to see how 12 consecutive lunar days compare." : "Add a scenario first, then come back to sweep its dates."}</p>
         <div className="row">
           {options.map((c) => (
             <button key={c.id} className="btn" onClick={() => setSweepSite(c.site)}>
@@ -46,8 +61,8 @@ export function DateSweep({ onNavigate }: { onNavigate: (s: Screen) => void }) {
       </section>
     );
   }
-  if (q.isError) return <ErrorState error={q.error} onRetry={() => void q.refetch()} />;
-  if (!q.data) return <Loading label="Sweeping 12 lunar days..." />;
+  if (q.isError) return <>{switcher}<ErrorState error={q.error} onRetry={() => void q.refetch()} /></>;
+  if (!q.data) return <>{switcher}<Loading label="Sweeping 12 lunar days..." /></>;
   const d = q.data;
   const row = sel !== null ? d.rows[sel] : null;
   const bestPc = d.best?.power_and_comms_pct;
@@ -58,15 +73,12 @@ export function DateSweep({ onNavigate }: { onNavigate: (s: Screen) => void }) {
         <h1>{d.site.name}: which date is best?</h1>
         <p>Same site, {d.rows.length} landing dates, one lunar day apart. The best date for power + comms is {bestPc ? bestPc.label : "not available"}.</p>
       </div>
+      {switcher}
       <WarningList warnings={d.warnings} />
       <div className="cols">
         <section className="panel stack">
           <h2>Landing date</h2>
-          <div className="seg" role="group" aria-label="Metric">
-            {OPTIONS.map((o) => (
-              <button key={o.key} aria-pressed={metric === o.key} onClick={() => setMetric(o.key)}>{o.label}</button>
-            ))}
-          </div>
+          <Seg label="Metric" value={metric} onChange={setMetric} options={OPTIONS.map((o) => ({ value: o.key, label: o.label }))} />
           <SweepChart rows={d.rows} metric={metric} selected={sel} onSelect={setSel} />
           <p className="hint">Click a bar to select a date.</p>
         </section>
