@@ -6,6 +6,8 @@ import { ExternalLinks } from "../components/ExternalLinks";
 import { HorizonView } from "../components/HorizonView";
 import { Loading } from "../components/Loading";
 import { PowerReadout } from "../components/PowerReadout";
+import { TerrainCard } from "../components/TerrainCard";
+import { VerdictBadge } from "../components/VerdictBadge";
 import { WarningList } from "../components/WarningList";
 import { siteLabel } from "../lib/site";
 import { formatUtc } from "../lib/utc";
@@ -44,6 +46,7 @@ export function SiteView({ onNavigate }: { onNavigate: (s: Screen) => void }) {
           <span className={`badge ${data.method === "horizon_mask" ? "ok" : "warn"}`}>
             {data.method === "horizon_mask" ? "Terrain horizon (LOLA DEM)" : "Smooth-sphere horizon, no terrain data"}
           </span>
+          {data.verdict && <VerdictBadge verdict={data.verdict} />}
         </div>
       </div>
       <WarningList warnings={data.warnings} />
@@ -73,17 +76,25 @@ export function SiteView({ onNavigate }: { onNavigate: (s: Screen) => void }) {
       </div>
       <section className="panel strip" aria-label="Real site and method">
         <ExternalLinks site={data.site} />
-        <details className="pop">
-          <summary>How these numbers are made</summary>
-          <div className="pop-body">
-            <ul>
-              <li>Ephemeris: {data.data_sources.ephemeris_source}</li>
-              {data.limitations.map((l, i) => (
-                <li key={i}>{l}</li>
-              ))}
-            </ul>
-          </div>
-        </details>
+        <div className="row" style={{ gap: "1rem", flexWrap: "wrap" }}>
+          <details className="pop">
+            <summary>Local Terrain &amp; Slope (LOLA DEM)</summary>
+            <div className="pop-body">
+              <TerrainCard site={data.site} terrain={data.terrain} />
+            </div>
+          </details>
+          <details className="pop">
+            <summary>How these numbers are made</summary>
+            <div className="pop-body">
+              <ul>
+                <li>Ephemeris: {data.data_sources.ephemeris_source}</li>
+                {data.limitations.map((l, i) => (
+                  <li key={i}>{l}</li>
+                ))}
+              </ul>
+            </div>
+          </details>
+        </div>
       </section>
     </>
   );

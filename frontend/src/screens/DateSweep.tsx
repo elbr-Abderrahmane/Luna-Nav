@@ -8,6 +8,7 @@ import { SweepChart, type SweepKey } from "../components/SweepChart";
 import { VerdictBadge } from "../components/VerdictBadge";
 import { WarningList } from "../components/WarningList";
 import { MAX_CARDS } from "../lib/constants";
+import { downloadText, sweepCsv } from "../lib/export";
 import { formatValue } from "../lib/format";
 import { siteLabel } from "../lib/site";
 import { useScenarioStore } from "../state/scenarioStore";

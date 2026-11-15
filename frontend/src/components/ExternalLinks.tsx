@@ -100,96 +100,74 @@ export function ExternalLinks({ site }: { site: Site }) {
 
   const quickMap2DUrl = buildQuickMap2DUrl(site);
   const quickMap3DUrl = buildQuickMap3DUrl(site);
-  const projectionLabel = isSouthPolar
-    ? "South Polar Stereographic (proj=27)"
-    : isNorthPolar
-      ? "North Polar Stereographic (proj=26)"
-      : "Equidistant Cylindrical (proj=16)";
 
   return (
     <div className="stack">
-      <p className="hint">
-        Open this landing site directly in <strong>LROC QuickMap</strong> (auto-configured to{" "}
-        <span className="mono">{projectionLabel}</span> with a site pin) or copy coordinates for external GIS tools.
-      </p>
-
-      <div className="stack" style={{ gap: "0.45rem" }}>
-        <div className="row" style={{ justifyContent: "space-between" }}>
-          <span>
-            <span className="hint" style={{ marginRight: "0.5rem" }}>
-              Lat, Lon (±180°):
-            </span>
-            <span className="mono">{coords180}</span>
-          </span>
-          <button className="btn small" onClick={() => void copyText("180", coords180)}>
-            {copiedKey === "180" ? "Copied" : "Copy"}
-          </button>
-        </div>
-
-        <div className="row" style={{ justifyContent: "space-between" }}>
-          <span>
-            <span className="hint" style={{ marginRight: "0.5rem" }}>
-              Lat, Lon (0–360°E):
-            </span>
-            <span className="mono">{coords360}</span>
-          </span>
-          <button className="btn small" onClick={() => void copyText("360", coords360)}>
-            {copiedKey === "360" ? "Copied" : "Copy 360°E"}
-          </button>
-        </div>
-
-        {coordsStereo && (
-          <div className="row" style={{ justifyContent: "space-between" }}>
-            <span>
-              <span className="hint" style={{ marginRight: "0.5rem" }}>
-                Polar Stereo X, Y (m):
-              </span>
-              <span className="mono">{coordsStereo}</span>
-            </span>
-            <button className="btn small" onClick={() => void copyText("stereo", coordsStereo)}>
-              {copiedKey === "stereo" ? "Copied" : "Copy X,Y (m)"}
-            </button>
-          </div>
-        )}
+      <p className="hint">Look at the real site: open directly in QuickMap (Polar/3D) or copy coordinates for Moon Trek.</p>
+      <div className="row">
+        <span className="mono">{coords180}</span>
+        <button className="btn small" onClick={() => void copyText("180", coords180)}>
+          {copiedKey === "180" ? "Copied" : "Copy"}
+        </button>
       </div>
-
-      {isPolar && (
-        <p
-          className="hint"
-          style={{
-            padding: "0.5rem 0.65rem",
-            borderRadius: "6px",
-            background: "rgba(56, 189, 248, 0.08)",
-            border: "1px solid rgba(56, 189, 248, 0.25)",
-            fontSize: "0.8rem",
-            lineHeight: 1.4,
-          }}
-        >
-          <strong>Why manual search says &ldquo;projection not found / outside bounds&rdquo;:</strong> QuickMap and Moon
-          Trek open by default in <em>Equatorial Cylindrical</em> projection (which stops at ±60°–75° latitude). Use the{" "}
-          <strong>direct polar links below</strong> to open QuickMap already in{" "}
-          <strong>{isSouthPolar ? "South Polar" : "North Polar"} projection</strong>, or in{" "}
-          <strong>NASA Moon Trek</strong> switch the bottom-left <em>Projections</em> menu to{" "}
-          <strong>{isSouthPolar ? "South Polar Stereographic" : "North Polar Stereographic"}</strong> (or{" "}
-          <strong>3D Globe</strong>) before searching <span className="mono">{coords180}</span>.
-        </p>
-      )}
-
-      <div className="row" style={{ flexWrap: "wrap", gap: "0.75rem" }}>
+      <div className="row">
         <a href={quickMap2DUrl} target="_blank" rel="noreferrer">
           {isSouthPolar
-            ? "LROC QuickMap (South Pole 2D Pin)"
+            ? "LROC QuickMap (South Pole)"
             : isNorthPolar
-              ? "LROC QuickMap (North Pole 2D Pin)"
-              : "LROC QuickMap (2D Pin)"}
+              ? "LROC QuickMap (North Pole)"
+              : "LROC QuickMap"}
         </a>
         <a href={quickMap3DUrl} target="_blank" rel="noreferrer">
-          LROC QuickMap (3D Globe)
+          QuickMap 3D Globe
         </a>
         <a href="https://trek.nasa.gov/moon/" target="_blank" rel="noreferrer">
           NASA Moon Trek
         </a>
       </div>
+      <details className="pop">
+        <summary>Projection &amp; Coordinate Formats</summary>
+        <div className="pop-body">
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            <div className="row" style={{ justifyContent: "space-between" }}>
+              <span>
+                Lat, Lon (±180°): <span className="mono">{coords180}</span>
+              </span>
+              <button className="btn small" onClick={() => void copyText("180", coords180)}>
+                {copiedKey === "180" ? "Copied" : "Copy"}
+              </button>
+            </div>
+            <div className="row" style={{ justifyContent: "space-between" }}>
+              <span>
+                Lat, Lon (0–360°E): <span className="mono">{coords360}</span>
+              </span>
+              <button className="btn small" onClick={() => void copyText("360", coords360)}>
+                {copiedKey === "360" ? "Copied" : "Copy 360°E"}
+              </button>
+            </div>
+            {coordsStereo && (
+              <div className="row" style={{ justifyContent: "space-between" }}>
+                <span>
+                  Polar Stereo X, Y (m): <span className="mono">{coordsStereo}</span>
+                </span>
+                <button className="btn small" onClick={() => void copyText("stereo", coordsStereo)}>
+                  {copiedKey === "stereo" ? "Copied" : "Copy X,Y (m)"}
+                </button>
+              </div>
+            )}
+            {isPolar && (
+              <p style={{ margin: "0.25rem 0 0", fontSize: "0.82rem", lineHeight: 1.4, opacity: 0.9 }}>
+                <strong>Polar projection note:</strong> QuickMap and Moon Trek default to <em>Equatorial Cylindrical</em>{" "}
+                projection (±60°–75°). Our <strong>LROC QuickMap ({isSouthPolar ? "South Pole" : "North Pole"})</strong>{" "}
+                link automatically switches to <span className="mono">{isSouthPolar ? "proj=27" : "proj=26"}</span> and
+                drops a marker pin. In <strong>NASA Moon Trek</strong>, switch the bottom-left <em>Projections</em> menu
+                to <strong>{isSouthPolar ? "South Polar Stereographic" : "North Polar Stereographic"}</strong> (or{" "}
+                <strong>3D Globe</strong>) before searching <span className="mono">{coords180}</span>.
+              </p>
+            )}
+          </div>
+        </div>
+      </details>
     </div>
   );
 }
