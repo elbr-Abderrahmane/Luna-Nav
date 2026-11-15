@@ -19,6 +19,23 @@ const DEFAULT_THRESHOLDS: Record<string, number> = {
   longest_comms_gap_h_max: 72,
 };
 
+function sanitizeThresholds(raw: Record<string, number>): Record<string, number> {
+  const sunlightMin = Math.min(100, Math.max(0, Number(raw.sunlight_pct_min ?? 60)));
+  const darknessMax = Math.max(0, Number(raw.longest_darkness_h_max ?? 50));
+  const darknessHard = Math.max(darknessMax, Number(raw.longest_darkness_h_not_viable ?? 100));
+  const earthMin = Math.min(100, Math.max(0, Number(raw.earth_visibility_pct_min ?? 50)));
+  const commsMax = Math.max(0, Number(raw.longest_comms_gap_h_max ?? 72));
+  return {
+    sunlight_pct_min: sunlightMin,
+    sunlight_pct_not_viable: Math.min(30, sunlightMin),
+    longest_darkness_h_max: darknessMax,
+    longest_darkness_h_not_viable: darknessHard,
+    earth_visibility_pct_min: earthMin,
+    earth_visibility_pct_not_viable: Math.min(20, earthMin),
+    longest_comms_gap_h_max: commsMax,
+  };
+}
+
 export function Compare({ onNavigate }: { onNavigate: (s: Screen) => void }) {
   const cards = useScenarioStore((s) => s.cards);
   const setActive = useScenarioStore((s) => s.setActiveCard);
@@ -42,7 +59,21 @@ export function Compare({ onNavigate }: { onNavigate: (s: Screen) => void }) {
       </section>
     );
   }
-  if (q.isError) return <ErrorState error={q.error} onRetry={() => void q.refetch()} />;
+  if (q.isError) {
+    return (
+      <ErrorState
+        error={q.error}
+        onRetry={() => {
+          if (appliedThresholds) {
+            setDraftThresholds(DEFAULT_THRESHOLDS);
+            setAppliedThresholds(undefined);
+          } else {
+            void q.refetch();
+          }
+        }}
+      />
+    );
+  }
   if (!q.data) return <Loading label="Comparing scenarios..." />;
   const data = q.data;
 
@@ -115,97 +146,133 @@ export function Compare({ onNavigate }: { onNavigate: (s: Screen) => void }) {
           }}
         />
       </section>
-      <div className="row" style={{ gap: 12, flexWrap: "wrap", alignItems: "flex-start" }}>
-        <details className="panel" style={{ flex: "1 1 380px" }}>
-          <summary>
-            Customize Spacecraft Hardware Thresholds {appliedThresholds ? "(Custom Active)" : "(NASA Default)"}
-          </summary>
-          <div className="stack" style={{ marginTop: 10 }}>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
-                gap: 8,
+      <section className="panel strip" aria-label="Thresholds and limits">
+        <div className="row" style={{ gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <span className="muted small">
+            Verdict rules:{" "}
+            <strong>{appliedThresholds ? "Custom Spacecraft Thresholds" : "NASA Default Thresholds"}</strong>
+          </span>
+          {appliedThresholds && (
+            <button
+              className="btn small"
+              onClick={() => {
+                setDraftThresholds(DEFAULT_THRESHOLDS);
+                setAppliedThresholds(undefined);
               }}
             >
-              <label className="field">
-                <span>Min Viable Sunlight (%)</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={draftThresholds.sunlight_pct_min}
-                  onChange={(e) => updateDraft("sunlight_pct_min", e.target.value)}
-                />
-              </label>
-              <label className="field">
-                <span>Max Viable Darkness (h)</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={708}
-                  value={draftThresholds.longest_darkness_h_max}
-                  onChange={(e) => updateDraft("longest_darkness_h_max", e.target.value)}
-                />
-              </label>
-              <label className="field">
-                <span>Survival Limit Darkness (h)</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={708}
-                  value={draftThresholds.longest_darkness_h_not_viable}
-                  onChange={(e) => updateDraft("longest_darkness_h_not_viable", e.target.value)}
-                />
-              </label>
-              <label className="field">
-                <span>Min Viable Earth Vis (%)</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={draftThresholds.earth_visibility_pct_min}
-                  onChange={(e) => updateDraft("earth_visibility_pct_min", e.target.value)}
-                />
-              </label>
-              <label className="field">
-                <span>Max Viable Comms Gap (h)</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={708}
-                  value={draftThresholds.longest_comms_gap_h_max}
-                  onChange={(e) => updateDraft("longest_comms_gap_h_max", e.target.value)}
-                />
-              </label>
-            </div>
-            <div className="row" style={{ gap: 8 }}>
-              <button className="btn primary small" onClick={() => setAppliedThresholds({ ...draftThresholds })}>
-                Apply Thresholds
-              </button>
-              {appliedThresholds && (
-                <button
-                  className="btn small"
-                  onClick={() => {
-                    setDraftThresholds(DEFAULT_THRESHOLDS);
-                    setAppliedThresholds(undefined);
+              Reset to NASA Defaults
+            </button>
+          )}
+        </div>
+        <div className="row" style={{ gap: "1.25rem", flexWrap: "wrap" }}>
+          <details className="pop">
+            <summary>
+              Customize Spacecraft Hardware Thresholds {appliedThresholds ? "(Custom Active)" : "(NASA Default)"}
+            </summary>
+            <div className="pop-body">
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(175px, 1fr))",
+                    gap: 8,
                   }}
                 >
-                  Reset to NASA Defaults
-                </button>
-              )}
+                  <label className="field">
+                    <span>Min Viable Sunlight (%)</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={draftThresholds.sunlight_pct_min}
+                      onChange={(e) => updateDraft("sunlight_pct_min", e.target.value)}
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Max Viable Darkness (h)</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={708}
+                      value={draftThresholds.longest_darkness_h_max}
+                      onChange={(e) => updateDraft("longest_darkness_h_max", e.target.value)}
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Survival Limit Darkness (h)</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={708}
+                      value={draftThresholds.longest_darkness_h_not_viable}
+                      onChange={(e) => updateDraft("longest_darkness_h_not_viable", e.target.value)}
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Min Viable Earth Vis (%)</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={draftThresholds.earth_visibility_pct_min}
+                      onChange={(e) => updateDraft("earth_visibility_pct_min", e.target.value)}
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Max Viable Comms Gap (h)</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={708}
+                      value={draftThresholds.longest_comms_gap_h_max}
+                      onChange={(e) => updateDraft("longest_comms_gap_h_max", e.target.value)}
+                    />
+                  </label>
+                </div>
+                <div className="row" style={{ gap: 8 }}>
+                  <button
+                    className="btn primary small"
+                    onClick={() => {
+                      const clean = sanitizeThresholds(draftThresholds);
+                      setDraftThresholds({
+                        sunlight_pct_min: clean.sunlight_pct_min,
+                        longest_darkness_h_max: clean.longest_darkness_h_max,
+                        longest_darkness_h_not_viable: clean.longest_darkness_h_not_viable,
+                        earth_visibility_pct_min: clean.earth_visibility_pct_min,
+                        longest_comms_gap_h_max: clean.longest_comms_gap_h_max,
+                      });
+                      setAppliedThresholds(clean);
+                    }}
+                  >
+                    Apply Thresholds
+                  </button>
+                  {appliedThresholds && (
+                    <button
+                      className="btn small"
+                      onClick={() => {
+                        setDraftThresholds(DEFAULT_THRESHOLDS);
+                        setAppliedThresholds(undefined);
+                      }}
+                    >
+                      Reset to NASA Defaults
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        </details>
-        <details className="panel" style={{ flex: "1 1 320px" }}>
-          <summary>Limits of these numbers</summary>
-          <ul>
-            {data.limitations.map((l, i) => (
-              <li key={i}>{l}</li>
-            ))}
-          </ul>
-        </details>
-      </div>
+          </details>
+          <details className="pop">
+            <summary>Limits of these numbers</summary>
+            <div className="pop-body">
+              <ul>
+                {data.limitations.map((l, i) => (
+                  <li key={i}>{l}</li>
+                ))}
+              </ul>
+            </div>
+          </details>
+        </div>
+      </section>
     </>
   );
 }

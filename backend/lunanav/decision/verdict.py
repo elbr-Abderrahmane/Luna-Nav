@@ -99,16 +99,30 @@ def validate_metrics(metrics: Any) -> dict[str, float]:
     return clean
 
 
+_THRESHOLD_ALIASES: dict[str, str] = {
+    "viable_sunlight_pct_min": "sunlight_pct_min",
+    "not_viable_sunlight_pct_below": "sunlight_pct_not_viable",
+    "viable_longest_darkness_h_max": "longest_darkness_h_max",
+    "not_viable_longest_darkness_h_above": "longest_darkness_h_not_viable",
+    "viable_earth_visibility_pct_min": "earth_visibility_pct_min",
+    "not_viable_earth_visibility_pct_below": "earth_visibility_pct_not_viable",
+    "viable_longest_comms_gap_h_max": "longest_comms_gap_h_max",
+}
+
+
 def resolve_thresholds(thresholds: dict | None = None) -> dict[str, float]:
     """Fusionne les seuils personnalisés avec les seuils par défaut et les vérifie."""
     merged = dict(DEFAULT_THRESHOLDS)
     if thresholds is not None:
         if not isinstance(thresholds, dict):
             raise InvalidThresholdsError("thresholds must be a dict or None")
-        unknown = sorted(set(thresholds) - set(DEFAULT_THRESHOLDS))
+        mapped: dict[str, Any] = {
+            _THRESHOLD_ALIASES.get(k, k): v for k, v in thresholds.items()
+        }
+        unknown = sorted(set(mapped) - set(DEFAULT_THRESHOLDS))
         if unknown:
             raise InvalidThresholdsError(f"unknown threshold(s): {', '.join(unknown)}")
-        for key, value in thresholds.items():
+        for key, value in mapped.items():
             if not _is_number(value) or value < 0:
                 raise InvalidThresholdsError(f"{key} must be a number >= 0, got {value!r}")
             merged[key] = value

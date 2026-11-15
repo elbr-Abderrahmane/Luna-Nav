@@ -80,14 +80,62 @@ def _enrich_terrain(site_info: Dict[str, Any]) -> Dict[str, Any]:
         return {"status": "unavailable"}
 
 
+_UI_THRESHOLD_ALIASES: Dict[str, str] = {
+    "viable_sunlight_pct_min": "sunlight_pct_min",
+    "not_viable_sunlight_pct_below": "sunlight_pct_not_viable",
+    "viable_longest_darkness_h_max": "longest_darkness_h_max",
+    "not_viable_longest_darkness_h_above": "longest_darkness_h_not_viable",
+    "viable_earth_visibility_pct_min": "earth_visibility_pct_min",
+    "not_viable_earth_visibility_pct_below": "earth_visibility_pct_not_viable",
+    "viable_longest_comms_gap_h_max": "longest_comms_gap_h_max",
+}
+
+
+def _normalize_ui_thresholds(
+    thresholds: Optional[Dict[str, float]]
+) -> Optional[Dict[str, float]]:
+    """Map README/UI threshold aliases to canonical P4 keys and ensure secondary bounds stay coherent."""
+    if not thresholds or not isinstance(thresholds, dict):
+        return thresholds
+    out: Dict[str, float] = {
+        _UI_THRESHOLD_ALIASES.get(k, k): v for k, v in thresholds.items()
+    }
+    # If the caller only customized the 'min'/'max' target without passing the 'not_viable' floor,
+    # keep the 'not_viable' floor coherent so valid UI inputs never fail coherence checks.
+    if (
+        "sunlight_pct_min" in out
+        and "sunlight_pct_not_viable" not in out
+        and isinstance(out["sunlight_pct_min"], (int, float))
+        and out["sunlight_pct_min"] < 30
+    ):
+        out["sunlight_pct_not_viable"] = max(0.0, float(out["sunlight_pct_min"]))
+    if (
+        "earth_visibility_pct_min" in out
+        and "earth_visibility_pct_not_viable" not in out
+        and isinstance(out["earth_visibility_pct_min"], (int, float))
+        and out["earth_visibility_pct_min"] < 20
+    ):
+        out["earth_visibility_pct_not_viable"] = max(0.0, float(out["earth_visibility_pct_min"]))
+    if (
+        "longest_darkness_h_max" in out
+        and "longest_darkness_h_not_viable" in out
+        and isinstance(out["longest_darkness_h_max"], (int, float))
+        and isinstance(out["longest_darkness_h_not_viable"], (int, float))
+        and out["longest_darkness_h_not_viable"] < out["longest_darkness_h_max"]
+    ):
+        out["longest_darkness_h_not_viable"] = float(out["longest_darkness_h_max"])
+    return out
+
+
 def _attach_row_verdicts(
     rows: List[Dict[str, Any]], thresholds: Optional[Dict[str, float]] = None
 ) -> None:
     """Attach P4's `verdict` to each row in-place."""
+    norm_t = _normalize_ui_thresholds(thresholds)
     for row in rows:
         metrics = row.get("metrics")
         if isinstance(metrics, dict):
-            v = verdict(metrics, thresholds)
+            v = verdict(metrics, norm_t)
             row["verdict"] = v
             row["verdict_explanation"] = explain_verdict(v)
 
@@ -180,7 +228,7 @@ class ScenarioService:
 
         out = copy.deepcopy(base)
         if isinstance(out.get("metrics"), dict):
-            v = verdict(out["metrics"], thresholds)
+            v = verdict(out["metrics"], _normalize_ui_thresholds(thresholds))
             out["verdict"] = v
             out["verdict_explanation"] = explain_verdict(v)
         if isinstance(out.get("site"), dict):
@@ -209,7 +257,7 @@ class ScenarioService:
 
         out = copy.deepcopy(base)
         if isinstance(out.get("metrics"), dict):
-            v = verdict(out["metrics"], thresholds)
+            v = verdict(out["metrics"], _normalize_ui_thresholds(thresholds))
             out["verdict"] = v
             out["verdict_explanation"] = explain_verdict(v)
         return out
