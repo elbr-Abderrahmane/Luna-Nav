@@ -6,6 +6,7 @@ import { ExternalLinks } from "../components/ExternalLinks";
 import { HorizonView } from "../components/HorizonView";
 import { Loading } from "../components/Loading";
 import { PowerReadout } from "../components/PowerReadout";
+import { VerdictBadge } from "../components/VerdictBadge";
 import { WarningList } from "../components/WarningList";
 import { siteLabel } from "../lib/site";
 import { formatUtc } from "../lib/utc";
@@ -44,7 +45,9 @@ export function SiteView({ onNavigate }: { onNavigate: (s: Screen) => void }) {
           <span className={`badge ${data.method === "horizon_mask" ? "ok" : "warn"}`}>
             {data.method === "horizon_mask" ? "Terrain horizon (LOLA DEM)" : "Smooth-sphere horizon, no terrain data"}
           </span>
+          {data.verdict && <VerdictBadge verdict={data.verdict} />}
         </div>
+        {data.verdict_explanation && <p className="hint" style={{ marginTop: 6 }}>{data.verdict_explanation}</p>}
       </div>
       <WarningList warnings={data.warnings} />
       <div className="cols-sky">

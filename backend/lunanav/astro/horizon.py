@@ -44,6 +44,8 @@ def default_dem():
         from .lola_dem import load_default
 
         return load_default()
+    if hasattr(dem, "load_default"):
+        return dem.load_default()
     return dem
 
 

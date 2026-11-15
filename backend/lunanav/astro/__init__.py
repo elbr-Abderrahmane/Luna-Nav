@@ -29,11 +29,12 @@ from .integration import (
     calculate_mission,
 )
 from .mission import plan_mission
-from .scenarios import compare_scenarios, date_sweep, site_conditions, site_timeline
+from .scenarios import SYNODIC_MONTH_D, compare_scenarios, date_sweep, site_conditions, site_timeline
 from .sites import get_site, list_sites, resolve_site
 from .topo import earth_az_el, sun_az_el
 
 __all__ = [
+    "SYNODIC_MONTH_D",
     "analyze_earth_visibility",
     "analyze_illumination",
     "calculate_mission",

@@ -75,6 +75,11 @@ export function DateSweep({ onNavigate }: { onNavigate: (s: Screen) => void }) {
       </div>
       {switcher}
       <WarningList warnings={d.warnings} />
+      {d.explanation && (
+        <section className="panel" aria-label="Seasonal date sweep summary">
+          <p>{d.explanation}</p>
+        </section>
+      )}
       <div className="cols">
         <section className="panel stack">
           <h2>Landing date</h2>

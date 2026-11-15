@@ -6,14 +6,20 @@ remains validated and strongly typed without requiring extra external dependenci
 
 import logging
 import os
+import sys
 from pathlib import Path
 from typing import List
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
-# Load environment variables from .env if present
+# Ensure `backend/` is on sys.path so `lunanav.*` and `app.*` are always importable
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+REPO_ROOT = BASE_DIR.parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
+# Load environment variables from .env if present
 load_dotenv(BASE_DIR / ".env")
 
 
@@ -21,7 +27,7 @@ class Settings(BaseModel):
     """Application-wide configuration settings."""
 
     app_name: str = Field(default="LUNA NAV — Lunar Landing Site Navigator API")
-    app_version: str = Field(default="0.1.0-provisional")
+    app_version: str = Field(default="1.0.0")
     environment: str = Field(default_factory=lambda: os.getenv("LUNA_ENV", "development"))
     debug: bool = Field(
         default_factory=lambda: os.getenv("LUNA_DEBUG", "true").lower() in ("1", "true", "yes")
@@ -29,7 +35,7 @@ class Settings(BaseModel):
     api_prefix: str = Field(default_factory=lambda: os.getenv("LUNA_API_PREFIX", "/api"))
     log_level: str = Field(default_factory=lambda: os.getenv("LUNA_LOG_LEVEL", "INFO").upper())
 
-    # Adapter mode flags: allow individual scientific modules to be toggled from mock to real
+    # Adapter mode flags for legacy Layer 1–4 endpoints (kept for backward compatibility)
     use_mock_terrain: bool = Field(
         default_factory=lambda: os.getenv("USE_MOCK_TERRAIN", "true").lower() in ("1", "true", "yes")
     )
@@ -40,22 +46,43 @@ class Settings(BaseModel):
         default_factory=lambda: os.getenv("USE_MOCK_DECISION", "true").lower() in ("1", "true", "yes")
     )
 
-    # CORS origins for Person 1's 3D Frontend
+    # Scenario disk caching (README §3 rule 6)
+    enable_scenario_cache: bool = Field(
+        default_factory=lambda: os.getenv("LUNANAV_SCENARIO_CACHE", "true").lower()
+        in ("1", "true", "yes")
+    )
+
+    # CORS origins for Person 1's React + Vite Frontend
     cors_origins: List[str] = Field(
         default_factory=lambda: [
             origin.strip()
             for origin in os.getenv(
                 "LUNA_CORS_ORIGINS",
-                "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173",
+                "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173,http://localhost:4173,http://127.0.0.1:4173",
             ).split(",")
             if origin.strip()
         ]
     )
 
-    # Paths for mock data and generated PDF reports
+    # Paths for mock data, explainers, cache, and generated reports
     mock_data_dir: Path = Field(
         default_factory=lambda: Path(
             os.getenv("LUNA_MOCK_DATA_DIR", str(BASE_DIR / "app" / "mock_data"))
+        )
+    )
+    mock_astro_dir: Path = Field(
+        default_factory=lambda: Path(
+            os.getenv("LUNA_MOCK_ASTRO_DIR", str(REPO_ROOT / "mock_data" / "astro"))
+        )
+    )
+    explainers_dir: Path = Field(
+        default_factory=lambda: Path(
+            os.getenv("LUNA_EXPLAINERS_DIR", str(REPO_ROOT / "docs" / "explainers"))
+        )
+    )
+    cache_dir: Path = Field(
+        default_factory=lambda: Path(
+            os.getenv("LUNANAV_CACHE_DIR", str(REPO_ROOT / "data" / "cache"))
         )
     )
     reports_output_dir: Path = Field(

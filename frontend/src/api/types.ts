@@ -106,6 +106,19 @@ export interface Metrics {
   libration_lon_range_deg: [number, number];
 }
 
+export interface TerrainInfo {
+  coverage?: {
+    status: string;
+    nominal_coverage: boolean;
+    raster_coverage: boolean;
+    pixel_covered: boolean;
+    elevation_m: number | null;
+  };
+  slope_deg?: number | null;
+  slope_status?: string;
+  roughness_m?: number | null;
+}
+
 export interface SiteConditions extends Envelope {
   site: Site;
   method: "horizon_mask" | "smooth_sphere";
@@ -134,6 +147,9 @@ export interface SiteConditions extends Envelope {
   next_events: NextEvent[];
   windows: Windows;
   metrics: Metrics;
+  verdict?: Verdict;
+  verdict_explanation?: string;
+  terrain?: TerrainInfo;
 }
 
 export interface TimelineSeries {
@@ -195,10 +211,48 @@ export interface BestOf {
   direction: "higher_is_better" | "lower_is_better";
 }
 
+export interface RankingEntry {
+  label: string;
+  verdict_level?: "viable" | "marginal" | "not_viable" | null;
+  normalized: Record<string, number>;
+  wsm_score?: number;
+  wsm_rank?: number;
+  topsis_score?: number;
+  topsis_rank?: number;
+}
+
+export interface RankingResult {
+  method: "wsm" | "topsis" | "both";
+  profile: "engineering" | "science" | "custom";
+  weights: Record<string, number>;
+  ranking: RankingEntry[];
+  note?: string;
+}
+
+export interface SensitivityResult {
+  base_top: string;
+  stability: "stable" | "moderate" | "sensitive";
+  top_never_changes: boolean;
+  random_weights: {
+    n: number;
+    seed: number;
+    top_win_share_pct: Record<string, number>;
+  };
+  profile_comparison: {
+    science_top: string;
+    engineering_top: string;
+    agree: boolean;
+  };
+}
+
 export interface Compare extends Envelope {
   n_scenarios: number;
   rows: CompareRow[];
   best: Record<CompareKey, BestOf>;
+  explanation?: string;
+  ranking?: RankingResult;
+  sensitivity?: SensitivityResult;
+  ranking_explanation?: string;
 }
 
 export type DateSweepRow = Omit<CompareRow, "windows" | "verdict"> & {
@@ -212,6 +266,7 @@ export interface DateSweep extends Envelope {
   window_days: number;
   rows: DateSweepRow[]; // label = "YYYY-MM-DD"
   best: Record<CompareKey, BestOf>;
+  explanation?: string;
 }
 
 // ---- request bodies ----
