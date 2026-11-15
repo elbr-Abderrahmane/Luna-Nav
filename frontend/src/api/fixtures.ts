@@ -101,15 +101,11 @@ export async function resolveFixture<T>(files: FixtureFiles, method: "GET" | "PO
       status: lat <= -80 ? "dem_unavailable" : "outside_nominal_coverage",
       lat_deg: lat,
       lon_deg: lon,
-      center_x_m: 0,
-      center_y_m: 0,
       radius_m: Number(params?.radius_m ?? 1600),
-      width_px: 0,
-      height_px: 0,
+      rows: 0,
+      cols: 0,
       resolution_m: null,
-      min_elevation_m: null,
-      max_elevation_m: null,
-      elevations_m: [],
+      values_m: [],
     } as T;
   }
   throw new FixtureMissingError(`No fixture mapping for ${method} ${clean}`);

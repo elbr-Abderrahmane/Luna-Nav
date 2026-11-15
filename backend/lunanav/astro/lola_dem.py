@@ -18,12 +18,15 @@ from __future__ import annotations
 
 import math
 import os
+import threading
 from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
 
 from .ephemeris import REPO_ROOT
+
+_DEM_LOCK = threading.RLock()
 
 R = 1_737_400.0
 NODATA = -32768.0
@@ -77,8 +80,10 @@ class LolaDEM:
         row0 = math.floor((cy + radius_m - t.f) / t.e) - 1
         n = math.ceil(2 * radius_m / self.res_m) + 3
         win = Window(col0, row0, n, n)
-        grid = self._ds.read(1, window=win, boundless=True, fill_value=np.nan)
-        return self._clean(grid), self._ds.window_transform(win)
+        with _DEM_LOCK:
+            grid = self._ds.read(1, window=win, boundless=True, fill_value=np.nan)
+            w_transform = self._ds.window_transform(win)
+        return self._clean(grid), w_transform
 
     def sample_elevation(self, lat_deg: float, lon_deg: float) -> float:
         """Bilinear height (m) at a point; NaN outside coverage or next to no-data."""
@@ -89,8 +94,9 @@ class LolaDEM:
         col = (float(x) - t.c) / t.a - 0.5
         row = (float(y) - t.f) / t.e - 0.5
         c0, r0 = math.floor(col), math.floor(row)
-        q = self._clean(self._ds.read(1, window=Window(c0, r0, 2, 2), boundless=True,
-                                      fill_value=np.nan)).astype(float)
+        with _DEM_LOCK:
+            raw = self._ds.read(1, window=Window(c0, r0, 2, 2), boundless=True, fill_value=np.nan)
+        q = self._clean(raw).astype(float)
         if np.any(q == NODATA):
             return float("nan")
         fc, fr = col - c0, row - r0

@@ -19,6 +19,7 @@ Two implementations:
 from __future__ import annotations
 
 import os
+import threading
 import warnings
 from datetime import datetime
 from functools import lru_cache
@@ -27,6 +28,8 @@ from pathlib import Path
 import numpy as np
 
 from .timeutil import J2000_JD, jd_tt, to_utc
+
+_SPICE_LOCK = threading.RLock()
 
 AU_KM = 149_597_870.7
 OBLIQUITY_J2000_DEG = 23.4392911
@@ -261,24 +264,32 @@ class SpiceEphemeris:
         self._sp = sp
         # Load each file by absolute path (no metakernel): avoids PATH_VALUES quirks and
         # SPICE's 80-character string limit on long Windows paths.
-        for f in kernel_files:
-            sp.furnsh(str(Path(f).resolve()))
+        with _SPICE_LOCK:
+            for f in kernel_files:
+                sp.furnsh(str(Path(f).resolve()))
         self.kernel_files = [Path(f) for f in kernel_files]
         self.source = "NAIF SPICE kernels: " + ", ".join(f.name for f in self.kernel_files)
 
     def _et(self, times):
-        return [self._sp.str2et(to_utc(t).strftime("%Y-%m-%dT%H:%M:%S.%f")) for t in times]
+        with _SPICE_LOCK:
+            return [self._sp.str2et(to_utc(t).strftime("%Y-%m-%dT%H:%M:%S.%f")) for t in times]
 
     def moon_eci_km(self, times):
-        return np.array([self._sp.spkpos("MOON", et, "J2000", "NONE", "EARTH")[0]
-                         for et in self._et(times)])
+        with _SPICE_LOCK:
+            ets = self._et(times)
+            return np.array([self._sp.spkpos("MOON", et, "J2000", "NONE", "EARTH")[0]
+                             for et in ets])
 
     def sun_eci_km(self, times):
-        return np.array([self._sp.spkpos("SUN", et, "J2000", "NONE", "EARTH")[0]
-                         for et in self._et(times)])
+        with _SPICE_LOCK:
+            ets = self._et(times)
+            return np.array([self._sp.spkpos("SUN", et, "J2000", "NONE", "EARTH")[0]
+                             for et in ets])
 
     def j2000_to_moon_me(self, times):
-        return np.array([self._sp.pxform("J2000", "MOON_ME", et) for et in self._et(times)])
+        with _SPICE_LOCK:
+            ets = self._et(times)
+            return np.array([self._sp.pxform("J2000", "MOON_ME", et) for et in ets])
 
 
 @lru_cache(maxsize=1)

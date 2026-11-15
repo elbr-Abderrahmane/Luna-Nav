@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useTerrainHeightmap } from "../api/queries";
 import type { Site, TerrainInfo } from "../api/types";
 import { formatValue } from "../lib/format";
@@ -26,19 +26,41 @@ export function TerrainCard({ site, terrain }: { site: Site; terrain?: TerrainIn
   const hmQuery = useTerrainHeightmap(site.lat_deg, site.lon_deg, 1600);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const hm = hmQuery.data;
+  const grid = hm?.values_m;
+
+  const stats = useMemo(() => {
+    if (!grid || !Array.isArray(grid) || grid.length === 0) {
+      return { minE: terrain?.summary?.min_elevation_m ?? null, maxE: terrain?.summary?.max_elevation_m ?? null };
+    }
+    let minVal = Infinity;
+    let maxVal = -Infinity;
+    for (const row of grid) {
+      if (!Array.isArray(row)) continue;
+      for (const v of row) {
+        if (typeof v === "number" && Number.isFinite(v)) {
+          if (v < minVal) minVal = v;
+          if (v > maxVal) maxVal = v;
+        }
+      }
+    }
+    return {
+      minE: Number.isFinite(minVal) ? minVal : (terrain?.summary?.min_elevation_m ?? null),
+      maxE: Number.isFinite(maxVal) ? maxVal : (terrain?.summary?.max_elevation_m ?? null),
+    };
+  }, [grid, terrain]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !hm || hm.status !== "ok" || !hm.elevations_m.length) return;
-    const rows = hm.elevations_m.length;
-    const cols = hm.elevations_m[0]?.length ?? 0;
+    if (!canvas || !hm || hm.status !== "ok" || !Array.isArray(grid) || grid.length === 0) return;
+    const rows = grid.length;
+    const cols = grid[0]?.length ?? 0;
     if (!rows || !cols) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const minE = hm.min_elevation_m ?? 0;
-    const maxE = hm.max_elevation_m ?? minE + 1;
+    const minE = stats.minE ?? 0;
+    const maxE = stats.maxE ?? minE + 1;
     const span = Math.max(1e-3, maxE - minE);
 
     const w = canvas.width;
@@ -49,7 +71,7 @@ export function TerrainCard({ site, terrain }: { site: Site; terrain?: TerrainIn
       const rIdx = Math.min(rows - 1, Math.floor((py / h) * rows));
       for (let px = 0; px < w; px++) {
         const cIdx = Math.min(cols - 1, Math.floor((px / w) * cols));
-        const val = hm.elevations_m[rIdx]?.[cIdx];
+        const val = grid[rIdx]?.[cIdx];
         const idx = (py * w + px) * 4;
         if (val === null || val === undefined) {
           img.data[idx] = 30;
@@ -79,7 +101,7 @@ export function TerrainCard({ site, terrain }: { site: Site; terrain?: TerrainIn
     ctx.moveTo(cx, cy - 10);
     ctx.lineTo(cx, cy + 10);
     ctx.stroke();
-  }, [hm]);
+  }, [hm, grid, stats]);
 
   if (!isPolar) {
     return (
@@ -95,19 +117,19 @@ export function TerrainCard({ site, terrain }: { site: Site; terrain?: TerrainIn
   const elev = site.elevation_m ?? terrain?.summary?.mean_elevation_m ?? null;
   const slope = terrain?.slope_deg ?? null;
   const roughness = terrain?.roughness_m ?? terrain?.summary?.roughness_m ?? null;
-  const minE = hm?.min_elevation_m ?? terrain?.summary?.min_elevation_m ?? null;
-  const maxE = hm?.max_elevation_m ?? terrain?.summary?.max_elevation_m ?? null;
+  const hasGrid = Boolean(hm && hm.status === "ok" && Array.isArray(grid) && grid.length > 0);
+  const covered = Boolean(terrain?.coverage?.pixel_covered || hasGrid);
 
   return (
     <section className="panel stack">
       <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
         <h2>Local terrain (LOLA 80–90°S DEM)</h2>
-        <span className={`badge ${terrain?.coverage?.pixel_covered ? "ok" : "warn"}`}>
-          {terrain?.coverage?.pixel_covered ? "DEM covered" : "No local DEM"}
+        <span className={`badge ${covered ? "ok" : "warn"}`}>
+          {covered ? "DEM covered" : "No local DEM"}
         </span>
       </div>
       <div className="row" style={{ gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
-        {hm && hm.status === "ok" && hm.elevations_m.length > 0 && (
+        {hasGrid && (
           <div className="stack" style={{ gap: 4, alignItems: "center" }}>
             <canvas
               ref={canvasRef}
@@ -135,8 +157,8 @@ export function TerrainCard({ site, terrain }: { site: Site; terrain?: TerrainIn
           <div>
             <dt>Local window min / max</dt>
             <dd>
-              {minE !== null && maxE !== null
-                ? `${Math.round(minE)} m .. ${Math.round(maxE)} m`
+              {stats.minE !== null && stats.maxE !== null
+                ? `${Math.round(stats.minE)} m .. ${Math.round(stats.maxE)} m`
                 : "—"}
             </dd>
           </div>

@@ -131,17 +131,12 @@ export interface TerrainHeightmap {
   status: string;
   lat_deg: number;
   lon_deg: number;
-  center_x_m: number;
-  center_y_m: number;
   radius_m: number;
-  width_px: number;
-  height_px: number;
-  resolution_m: [number, number] | null;
-  min_elevation_m: number | null;
-  max_elevation_m: number | null;
-  valid_pixel_count?: number;
-  nodata_pixel_count?: number;
-  elevations_m: (number | null)[][];
+  rows: number;
+  cols: number;
+  resolution_m?: { x_m: number; y_m: number } | null;
+  nodata_count?: number;
+  values_m: (number | null)[][];
 }
 
 export interface SiteConditions extends Envelope {

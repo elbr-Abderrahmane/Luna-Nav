@@ -120,3 +120,4 @@ if __name__ == "__main__":
     target = repo / "data" / "raw" / "dem" / "LDEM_80S_80MPP_ADJ.TIF"
     path = build_south_pole_dem(target)
     print(f"Generated calibrated South-Pole DEM at {path} ({path.stat().st_size / (1024 * 1024):.1f} MB)")
+
