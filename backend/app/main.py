@@ -14,6 +14,8 @@ from typing import Any, Dict
 
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api import (
     explainers,
@@ -27,7 +29,7 @@ from app.api import (
     terrain,
     zones,
 )
-from app.core.config import settings
+from app.core.config import REPO_ROOT, settings
 from app.core.exceptions import register_exception_handlers
 from lunanav.astro.ephemeris import get_ephemeris
 from lunanav.terrain.dem import default_dem_path
@@ -78,10 +80,11 @@ def create_app() -> FastAPI:
         redoc_url="/redoc",
     )
 
-    # Configure CORS for Person 1's Frontend
+    # Configure CORS for Person 1's Frontend and public cloud deployments
     application.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
+        allow_origin_regex=r"https://.*\.(github\.io|trycloudflare\.com|vercel\.app|pages\.dev|netlify\.app|hf\.space|onrender\.com|lhr\.life)",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -123,6 +126,17 @@ def create_app() -> FastAPI:
     application.include_router(zones.router, prefix=api_prefix)
     application.include_router(points.router, prefix=api_prefix)
     application.include_router(reports.router, prefix=api_prefix)
+
+    # Serve compiled React frontend if frontend/dist is present (unified full-stack container mode)
+    frontend_dist = REPO_ROOT / "frontend" / "dist"
+    if (frontend_dist / "index.html").is_file():
+        assets_dir = frontend_dist / "assets"
+        if assets_dir.is_dir():
+            application.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+
+        @application.get("/", include_in_schema=False)
+        def serve_spa_index():
+            return FileResponse(str(frontend_dist / "index.html"))
 
     return application
 

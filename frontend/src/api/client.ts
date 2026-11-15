@@ -3,13 +3,27 @@
 // The dev server needs in vite.config.ts:  server: { fs: { allow: [".."] } }
 import { FixtureMissingError, resolveFixture, type FixtureFiles } from "./fixtures";
 
-const BASE: string = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+function resolveDefaultBase(): string {
+  if (import.meta.env.VITE_API_URL !== undefined) {
+    return import.meta.env.VITE_API_URL;
+  }
+  if (typeof window !== "undefined") {
+    const h = window.location.hostname;
+    if (h !== "localhost" && h !== "127.0.0.1" && !h.endsWith("github.io")) {
+      return "";
+    }
+  }
+  return "http://localhost:8000";
+}
+
+const BASE: string = resolveDefaultBase();
 export const API_PREFIX = "/api";
 export const USE_FIXTURES: boolean = import.meta.env.VITE_USE_FIXTURES === "true";
 
-const fixtureFiles = (
-  USE_FIXTURES ? import.meta.glob("../../../mock_data/astro/**/*.json", { query: "?raw", import: "default" }) : {}
-) as FixtureFiles;
+const fixtureFiles = import.meta.glob("../../../mock_data/astro/**/*.json", {
+  query: "?raw",
+  import: "default",
+}) as FixtureFiles;
 
 export class ApiError extends Error {
   status: number;
@@ -43,7 +57,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
-export const apiGet = <T>(path: string, params?: Params): Promise<T> => {
+export const apiGet = async <T>(path: string, params?: Params): Promise<T> => {
   if (USE_FIXTURES) return fromFixtures<T>("GET", path, params);
   const q = params
     ? "?" +
@@ -52,10 +66,24 @@ export const apiGet = <T>(path: string, params?: Params): Promise<T> => {
         .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
         .join("&")
     : "";
-  return request<T>(`${path}${q}`);
+  try {
+    return await request<T>(`${path}${q}`);
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
+    return fromFixtures<T>("GET", path, params);
+  }
 };
 
-export const apiPost = <T>(path: string, body: unknown): Promise<T> => {
+export const apiPost = async <T>(path: string, body: unknown): Promise<T> => {
   if (USE_FIXTURES) return fromFixtures<T>("POST", path, undefined, body);
-  return request<T>(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  try {
+    return await request<T>(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
+    return fromFixtures<T>("POST", path, undefined, body);
+  }
 };
